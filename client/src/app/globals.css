@@ -1,26 +1,72 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-background: #f8fafc;
+  --color-normal: #475569;
+  --color-accent: #599692;
+  --color-highlight: #0f172a;
+  --color-card: #ffffff;
+  --color-border: rgba(15, 23, 42, 0.12);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --color-background: #11172a;
+  --color-normal: #626c7d;
+  --color-accent: #599692;
+  --color-highlight: #dfe5ec;
+  --color-card: rgba(255, 255, 255, 0.04);
+  --color-border: rgba(255, 255, 255, 0.1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-normal);
+}
+
+button,
+a {
+  outline-color: var(--color-accent);
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+.container-custom {
+  width: min(1120px, calc(100% - 32px));
+  margin-inline: auto;
+}
+
+.section-padding {
+  padding-block: 96px;
+}
+
+.text-highlight {
+  color: var(--color-highlight);
+}
+
+.text-normal {
+  color: var(--color-normal);
+}
+
+.text-accent {
+  color: var(--color-accent);
+}
+
+.bg-site {
+  background: var(--color-background);
+}
+
+.bg-card {
+  background: var(--color-card);
+}
+
+.border-site {
+  border-color: var(--color-border);
 }

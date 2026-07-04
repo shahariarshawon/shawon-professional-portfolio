@@ -1,0 +1,24 @@
+{
+  "name": "shawon-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dynamic developer portfolio for AL Shahariar Arafat Shawon with separate client and server.",
+  "scripts": {
+    "client": "pnpm --dir client dev",
+    "server": "pnpm --dir server dev",
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint"
+  },
+  "keywords": [
+    "portfolio",
+    "backend-developer",
+    "software-engineer",
+    "nextjs",
+    "express",
+    "typescript",
+    "postgresql"
+  ],
+  "author": "AL Shahariar Arafat Shawon",
+  "license": "MIT"
+}

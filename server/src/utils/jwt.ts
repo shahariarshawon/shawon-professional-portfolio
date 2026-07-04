@@ -1,12 +1,6 @@
-import { AdminRole } from "@prisma/client";
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 import { env } from "../config/env";
-
-export type TAuthTokenPayload = {
-  adminId: string;
-  email: string;
-  role: AdminRole;
-};
+import { TAuthTokenPayload } from "../types/auth";
 
 const createToken = (payload: TAuthTokenPayload) => {
   const expiresIn = env.jwtExpiresIn as SignOptions["expiresIn"];

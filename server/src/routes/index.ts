@@ -4,6 +4,7 @@ import healthRoutes from "./health.route";
 import authRoutes from "../modules/auth/auth.route";
 import publicRoutes from "../modules/public/public.route";
 import adminRoutes from "../modules/admin/admin.route";
+import uploadRoutes from "../modules/upload/upload.route";
 
 const router = Router();
 
@@ -27,6 +28,10 @@ const moduleRoutes = [
   {
     path: "/admin",
     route: adminRoutes,
+  },
+  {
+    path: "/upload",
+    route: uploadRoutes,
   },
 ];
 

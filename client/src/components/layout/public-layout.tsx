@@ -7,7 +7,7 @@ type TPublicLayoutProps = {
 export function PublicLayout({ children }: TPublicLayoutProps) {
   return (
     <div className="min-h-screen bg-site">
-      <header className="sticky top-0 z-50 border-b border-site bg-[var(--color-background)]/80 backdrop-blur">
+      <header className="sticky top-0 z-50 border-b border-site bg-(--color-background)/80 backdrop-blur">
         <div className="container-custom flex h-16 items-center justify-between">
           <a href="#home" className="text-lg font-semibold text-highlight">
             Shawon

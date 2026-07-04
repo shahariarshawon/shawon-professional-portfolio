@@ -1,4 +1,5 @@
 import { Router } from "express";
+import databaseRoutes from "./database.route";
 import healthRoutes from "./health.route";
 
 const router = Router();
@@ -7,6 +8,10 @@ const moduleRoutes = [
   {
     path: "/health",
     route: healthRoutes
+  },
+  {
+    path: "/database",
+    route: databaseRoutes
   }
 ];
 

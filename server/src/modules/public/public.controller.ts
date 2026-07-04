@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import AppError from "../../errors/AppError";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { PublicService } from "./public.service";
@@ -70,7 +71,13 @@ const getProjects = catchAsync(async (_req: Request, res: Response) => {
 });
 
 const getProjectBySlug = catchAsync(async (req: Request, res: Response) => {
-  const { slug } = req.params;
+  const slugParam = req.params.slug;
+
+  const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam;
+
+  if (!slug) {
+    throw new AppError(400, "Project slug is required");
+  }
 
   const result = await PublicService.getProjectBySlug(slug);
 

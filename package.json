@@ -6,9 +6,9 @@
   "scripts": {
     "client": "pnpm --dir client dev",
     "server": "pnpm --dir server dev",
-    "dev": "pnpm -r dev",
-    "build": "pnpm -r build",
-    "lint": "pnpm -r lint"
+    "dev": "pnpm --parallel -r run dev",
+    "build": "pnpm -r run build",
+    "type-check": "pnpm -r run type-check"
   },
   "keywords": [
     "portfolio",

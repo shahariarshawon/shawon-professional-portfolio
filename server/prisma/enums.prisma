@@ -1,0 +1,26 @@
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+enum ExperienceStatus {
+  CURRENTLY_WORKING
+  COMPLETED
+}
+
+enum ContactMessageStatus {
+  UNREAD
+  READ
+}
+
+enum ResumeTargetRole {
+  BACKEND_DEVELOPER
+  FULL_STACK_DEVELOPER
+  SOFTWARE_ENGINEER
+}
+
+enum FileType {
+  IMAGE
+  PDF
+  OTHER
+}

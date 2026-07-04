@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
+import multer from "multer";
 import { ZodError } from "zod";
 import { env } from "../config/env";
 
@@ -14,6 +15,7 @@ type TErrorResponse = {
 type TCustomError = Error & {
   statusCode?: number;
   isOperational?: boolean;
+  code?: string;
 };
 
 const globalErrorHandler = (
@@ -33,6 +35,20 @@ const globalErrorHandler = (
       path: issue.path.join("."),
       message: issue.message
     }));
+  }
+
+  if (err instanceof multer.MulterError) {
+    statusCode = 400;
+
+    if (err.code === "LIMIT_FILE_SIZE") {
+      message = "Uploaded file is too large";
+    } else if (err.code === "LIMIT_FILE_COUNT") {
+      message = "Too many files uploaded";
+    } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
+      message = "Unexpected file field";
+    } else {
+      message = err.message;
+    }
   }
 
   if (err instanceof JsonWebTokenError) {

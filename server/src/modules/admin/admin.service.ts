@@ -1,6 +1,7 @@
-import { ContactMessageStatus } from "@prisma/client";
 import AppError from "../../errors/AppError";
 import prisma from "../../utils/prisma";
+
+type TContactMessageStatus = "READ" | "UNREAD";
 
 type TAnyObject = Record<string, any>;
 
@@ -920,10 +921,8 @@ const updateContactInfo = async (payload: TAnyObject) => {
 };
 
 const getMessages = async (status?: string) => {
-  const validStatus =
-    status === "READ" || status === "UNREAD"
-      ? (status as ContactMessageStatus)
-      : undefined;
+  const validStatus: TContactMessageStatus | undefined =
+    status === "READ" || status === "UNREAD" ? status : undefined;
 
   return prisma.contactMessage.findMany({
     where: validStatus

@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-[var(--color-accent)] px-5 py-2.5 text-white hover:opacity-90",
+          "bg-[var(--color-accent)] px-5 py-2.5 text-white shadow-sm hover:opacity-90",
         outline:
           "border border-site bg-transparent px-5 py-2.5 text-highlight hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]",
         ghost:
@@ -44,3 +44,5 @@ export function Button({
     />
   );
 }
+
+export { buttonVariants };

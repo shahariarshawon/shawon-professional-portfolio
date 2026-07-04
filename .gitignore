@@ -27,3 +27,22 @@ Thumbs.db
 
 # Prisma
 server/prisma/migrations/
+node_modules/
+.next/
+dist/
+build/
+
+.env
+.env.local
+.env.development
+.env.production
+
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/

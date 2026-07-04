@@ -1,12 +1,12 @@
-import { AdminRole } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import { env } from "../../config/env";
 import AppError from "../../errors/AppError";
+import { TAdminRole } from "../../types/auth";
 import catchAsync from "../../utils/catchAsync";
 import { JwtUtils } from "../../utils/jwt";
 import prisma from "../../utils/prisma";
 
-const requireAuth = (...requiredRoles: AdminRole[]) => {
+const requireAuth = (...requiredRoles: TAdminRole[]) => {
   return catchAsync(async (req: Request, _res: Response, next: NextFunction) => {
     const token = req.cookies?.[env.authCookieName];
 
@@ -30,14 +30,14 @@ const requireAuth = (...requiredRoles: AdminRole[]) => {
       throw new AppError(403, "This admin account is inactive");
     }
 
-    if (requiredRoles.length && !requiredRoles.includes(admin.role)) {
+    if (requiredRoles.length && !requiredRoles.includes(admin.role as TAdminRole)) {
       throw new AppError(403, "You are not authorized to access this resource");
     }
 
     req.admin = {
       adminId: admin.id,
       email: admin.email,
-      role: admin.role
+      role: admin.role as TAdminRole
     };
 
     next();

@@ -1,4 +1,4 @@
-import { AdminRole } from "@prisma/client";
+import { TAdminRole } from "./auth";
 
 declare global {
   namespace Express {
@@ -6,7 +6,7 @@ declare global {
       admin?: {
         adminId: string;
         email: string;
-        role: AdminRole;
+        role: TAdminRole;
       };
     }
   }

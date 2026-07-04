@@ -1,5 +1,6 @@
-import { notFound } from "next/navigation";
+export const dynamic = "force-dynamic";
 
+import { notFound } from "next/navigation";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { getProjectBySlug } from "@/lib/public-api";
 

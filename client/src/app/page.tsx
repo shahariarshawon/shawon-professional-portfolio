@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { AboutSection } from "@/components/public/about/about-section";
 import { ContactSection } from "@/components/public/contact/contact-section";
 import { EducationCertificationsSection } from "@/components/public/education/education-certifications-section";

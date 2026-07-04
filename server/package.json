@@ -20,6 +20,7 @@
   "author": "AL Shahariar Arafat Shawon",
   "license": "MIT",
   "dependencies": {
+    "@prisma/client": "^7.8.0",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -37,6 +38,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.0.10",
+    "prisma": "^7.8.0",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }

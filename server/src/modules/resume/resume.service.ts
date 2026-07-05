@@ -4,8 +4,7 @@ import prisma from "../../utils/prisma";
 type TResumeTargetRole =
   | "BACKEND_DEVELOPER"
   | "FULL_STACK_DEVELOPER"
-  | "SOFTWARE_ENGINEER"
-  | "REMOTE_JOB";
+  | "SOFTWARE_ENGINEER";
 
 type TResumeSectionPayload = {
   title: string;
@@ -21,14 +20,14 @@ type TResumeProjectPayload = {
   liveLink?: string | null;
   githubLink?: string | null;
   order: number;
-  isEnabled: boolean;
+  isEnabled?: boolean;
 };
 
 type TResumeSkillPayload = {
   category: string;
   skills: string[];
   order: number;
-  isEnabled: boolean;
+  isEnabled?: boolean;
 };
 
 type TUpdateResumePayload = {
@@ -84,11 +83,16 @@ const getActiveResume = async () => {
 const createDefaultResume = async () => {
   const result = await prisma.resume.create({
     data: {
+      name: "AL Shahariar Arafat Shawon",
+      designation: "Backend Developer",
+      email: "shahariarshawon.dev@gmail.com",
+
       title: "Backend Developer Resume",
       targetRole: "BACKEND_DEVELOPER",
       summary:
         "Backend-focused developer with hands-on experience in Node.js, Express.js, TypeScript, REST API development, authentication systems, and database-driven web applications.",
       isActive: true,
+
       sections: {
         create: [
           {
@@ -107,6 +111,7 @@ const createDefaultResume = async () => {
           }
         ]
       },
+
       projects: {
         create: [
           {
@@ -123,24 +128,22 @@ const createDefaultResume = async () => {
             ],
             liveLink: "",
             githubLink: "",
-            order: 1,
-            isEnabled: true
+            order: 1
           }
         ]
       },
+
       skills: {
         create: [
           {
             category: "Backend",
             skills: ["Node.js", "Express.js", "REST API", "JWT", "Prisma"],
-            order: 1,
-            isEnabled: true
+            order: 1
           },
           {
             category: "Database",
             skills: ["PostgreSQL", "MongoDB", "Database Design"],
-            order: 2,
-            isEnabled: true
+            order: 2
           }
         ]
       }
@@ -209,6 +212,7 @@ const updateActiveResume = async (payload: TUpdateResumePayload) => {
         targetRole: payload.targetRole,
         summary: payload.summary,
         isActive: payload.isActive,
+
         sections: {
           create: payload.sections.map((section, index) => ({
             title: section.title,
@@ -217,6 +221,7 @@ const updateActiveResume = async (payload: TUpdateResumePayload) => {
             isEnabled: section.isEnabled
           }))
         },
+
         projects: {
           create: payload.projects.map((project, index) => ({
             name: project.name,
@@ -224,16 +229,15 @@ const updateActiveResume = async (payload: TUpdateResumePayload) => {
             techStack: project.techStack,
             liveLink: project.liveLink || "",
             githubLink: project.githubLink || "",
-            order: project.order || index + 1,
-            isEnabled: project.isEnabled
+            order: project.order || index + 1
           }))
         },
+
         skills: {
           create: payload.skills.map((skill, index) => ({
             category: skill.category,
             skills: skill.skills,
-            order: skill.order || index + 1,
-            isEnabled: skill.isEnabled
+            order: skill.order || index + 1
           }))
         }
       },

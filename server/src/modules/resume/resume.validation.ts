@@ -10,8 +10,7 @@ const optionalUrlSchema = z
 const resumeTargetRoleSchema = z.enum([
   "BACKEND_DEVELOPER",
   "FULL_STACK_DEVELOPER",
-  "SOFTWARE_ENGINEER",
-  "REMOTE_JOB"
+  "SOFTWARE_ENGINEER"
 ]);
 
 const updateResumeValidationSchema = z.object({
@@ -47,7 +46,7 @@ const updateResumeValidationSchema = z.object({
         liveLink: optionalUrlSchema,
         githubLink: optionalUrlSchema,
         order: z.number().int().min(1),
-        isEnabled: z.boolean()
+        isEnabled: z.boolean().optional()
       })
     ),
 
@@ -56,7 +55,7 @@ const updateResumeValidationSchema = z.object({
         category: z.string().trim().min(1, "Skill category is required"),
         skills: z.array(z.string().trim().min(1)),
         order: z.number().int().min(1),
-        isEnabled: z.boolean()
+        isEnabled: z.boolean().optional()
       })
     )
   })

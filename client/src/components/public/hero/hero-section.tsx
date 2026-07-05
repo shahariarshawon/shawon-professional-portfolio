@@ -26,9 +26,11 @@ const getSocialIcon = (platform: string) => {
 
 export function HeroSection({ hero }: THeroSectionProps) {
   const name = hero?.name || "AL Shahariar Arafat Shawon";
+
   const designation =
     hero?.designation ||
     "Backend Developer | Backend-Focused Full-Stack Developer | Software Engineer";
+
   const introduction =
     hero?.introduction ||
     "I build secure, scalable, and database-driven web applications using Node.js, Express.js, TypeScript, Next.js, and modern backend technologies.";
@@ -59,7 +61,7 @@ export function HeroSection({ hero }: THeroSectionProps) {
             {name}
           </h1>
 
-          <p className="mt-5 max-w-3xl text-xl font-semibold leading-8 text-highlight/90">
+          <p className="mt-5 max-w-3xl text-xl font-semibold leading-8 text-highlight">
             {designation}
           </p>
 
@@ -80,7 +82,12 @@ export function HeroSection({ hero }: THeroSectionProps) {
                 href={hero.resumeUrl}
                 target="_blank"
                 rel="noreferrer"
-                className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+                className={cn(
+                  buttonVariants({
+                    variant: "outline",
+                    size: "lg",
+                  }),
+                )}
               >
                 View Resume
                 <ExternalLink className="ml-2" size={18} />
@@ -91,7 +98,12 @@ export function HeroSection({ hero }: THeroSectionProps) {
               <a
                 href={hero.resumeUrl}
                 download
-                className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+                className={cn(
+                  buttonVariants({
+                    variant: "outline",
+                    size: "lg",
+                  }),
+                )}
               >
                 Download Resume
                 <Download className="ml-2" size={18} />
@@ -107,7 +119,7 @@ export function HeroSection({ hero }: THeroSectionProps) {
                 target="_blank"
                 rel="noreferrer"
                 aria-label={link.platform}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-site bg-card text-highlight transition hover:border-(--color-accent)hover:text-accent"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-site bg-card text-highlight transition hover:border-(--color-accent) hover:text-accent"
               >
                 {getSocialIcon(link.platform)}
               </a>
@@ -132,18 +144,21 @@ export function HeroSection({ hero }: THeroSectionProps) {
               <img
                 src={hero.photoUrl}
                 alt={name}
+                loading="eager"
+                decoding="async"
                 className="h-full w-full object-cover"
               />
-              
             ) : (
               <div className="flex h-full w-full items-center justify-center p-8 text-center">
                 <div>
                   <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-(--color-accent)/20 text-3xl font-bold text-accent">
                     AS
                   </div>
+
                   <p className="mt-6 text-lg font-semibold text-highlight">
                     Professional Photo Placeholder
                   </p>
+
                   <p className="mt-2 text-sm text-normal">
                     Upload your profile photo from the admin dashboard later.
                   </p>
@@ -156,6 +171,7 @@ export function HeroSection({ hero }: THeroSectionProps) {
             <p className="text-sm font-semibold text-highlight">
               Backend-Focused Developer
             </p>
+
             <p className="mt-1 text-xs text-normal">
               REST APIs • Authentication • Database Design
             </p>

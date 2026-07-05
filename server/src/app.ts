@@ -10,7 +10,7 @@ import router from "./routes";
 import sendResponse from "./utils/sendResponse";
 
 const app: Application = express();
-
+app.set("trust proxy", 1);
 app.use(cors(corsOptions));
 
 app.use(express.json());

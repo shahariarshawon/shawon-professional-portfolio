@@ -1,8 +1,7 @@
 export type TResumeTargetRole =
   | "BACKEND_DEVELOPER"
   | "FULL_STACK_DEVELOPER"
-  | "SOFTWARE_ENGINEER"
-  | "REMOTE_JOB";
+  | "SOFTWARE_ENGINEER";
 
 export type TResumeSection = {
   id: string;
@@ -22,7 +21,7 @@ export type TResumeProject = {
   liveLink?: string | null;
   githubLink?: string | null;
   order: number;
-  isEnabled: boolean;
+  isEnabled?: boolean;
 };
 
 export type TResumeSkill = {
@@ -31,7 +30,7 @@ export type TResumeSkill = {
   category: string;
   skills: string[];
   order: number;
-  isEnabled: boolean;
+  isEnabled?: boolean;
 };
 
 export type TResume = {

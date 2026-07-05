@@ -35,7 +35,7 @@ export function getResumeFormDefaults(
           liveLink: project.liveLink || "",
           githubLink: project.githubLink || "",
           order: project.order || index + 1,
-          isEnabled: project.isEnabled
+          isEnabled: project.isEnabled ?? true
         }))
       : [
           {
@@ -55,7 +55,7 @@ export function getResumeFormDefaults(
           category: skill.category,
           skillsText: skill.skills.join(", "),
           order: skill.order || index + 1,
-          isEnabled: skill.isEnabled
+          isEnabled: skill.isEnabled ?? true
         }))
       : [
           {

@@ -11,11 +11,10 @@ export const resumeFormSchema = z.object({
   title: z.string().trim().min(1, "Resume title is required"),
 
   targetRole: z.enum([
-    "BACKEND_DEVELOPER",
-    "FULL_STACK_DEVELOPER",
-    "SOFTWARE_ENGINEER",
-    "REMOTE_JOB"
-  ]),
+  "BACKEND_DEVELOPER",
+  "FULL_STACK_DEVELOPER",
+  "SOFTWARE_ENGINEER"
+]),
 
   summary: z
     .string()

@@ -134,10 +134,6 @@ export function ResumeBuilder({ resume }: TResumeBuilderProps) {
                 {
                   label: "Software Engineer",
                   value: "SOFTWARE_ENGINEER"
-                },
-                {
-                  label: "Remote Job",
-                  value: "REMOTE_JOB"
                 }
               ]}
               {...register("targetRole")}

@@ -3,6 +3,8 @@ import validateRequest from "../../middlewares/validateRequest";
 import { AuthMiddleware } from "../auth/auth.middleware";
 import { AdminController } from "./admin.controller";
 import { AdminValidation } from "./admin.validation";
+import resumeRoutes from "../resume/resume.route";
+
 
 const router = Router();
 
@@ -195,6 +197,9 @@ router.delete(
   validateRequest(AdminValidation.idParamValidationSchema),
   AdminController.deleteMessage
 );
+
+/* Resume Links */
+router.use("/resume", resumeRoutes);
 
 /* Footer Links */
 router.get("/footer-links", AdminController.getFooterLinks);

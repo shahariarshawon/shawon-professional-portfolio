@@ -43,7 +43,7 @@ export function Navbar({ items }: TNavbarProps) {
     handleScroll();
 
     window.addEventListener("scroll", handleScroll, {
-      passive: true
+      passive: true,
     });
 
     return () => window.removeEventListener("scroll", handleScroll);
@@ -58,50 +58,50 @@ export function Navbar({ items }: TNavbarProps) {
           label: "About",
           href: "#about",
           order: 2,
-          isEnabled: true
+          isEnabled: true,
         },
         {
           id: "experience",
           label: "Experience",
           href: "#experience",
           order: 3,
-          isEnabled: true
+          isEnabled: true,
         },
         {
           id: "skills",
           label: "Skills",
           href: "#skills",
           order: 4,
-          isEnabled: true
+          isEnabled: true,
         },
         {
           id: "projects",
           label: "Projects",
           href: "#projects",
           order: 5,
-          isEnabled: true
+          isEnabled: true,
         },
         {
           id: "education",
           label: "Education",
           href: "#education",
           order: 6,
-          isEnabled: true
+          isEnabled: true,
         },
         {
           id: "services",
           label: "Services",
           href: "#services",
           order: 7,
-          isEnabled: true
+          isEnabled: true,
         },
         {
           id: "contact",
           label: "Contact",
           href: "#contact",
           order: 8,
-          isEnabled: true
-        }
+          isEnabled: true,
+        },
       ];
 
   return (
@@ -111,7 +111,10 @@ export function Navbar({ items }: TNavbarProps) {
           Shawon<span className="text-accent">.</span>
         </a>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium lg:flex">
+        <nav
+          aria-label="Primary navigation"
+          className="hidden items-center gap-6 text-sm font-medium lg:flex"
+        >
           {navItems.map((item) => {
             const id = item.href.replace("#", "");
             const isActive = activeSection === id;
@@ -122,7 +125,7 @@ export function Navbar({ items }: TNavbarProps) {
                 href={item.href}
                 className={cn(
                   "transition hover:text-accent",
-                  isActive ? "text-accent" : "text-normal"
+                  isActive ? "text-accent" : "text-normal",
                 )}
               >
                 {item.label}
@@ -137,6 +140,8 @@ export function Navbar({ items }: TNavbarProps) {
           <button
             type="button"
             aria-label="Toggle navigation menu"
+            aria-expanded={isOpen}
+            aria-controls="mobile-navigation"
             onClick={() => setIsOpen((prev) => !prev)}
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-site bg-card text-highlight lg:hidden"
           >
@@ -146,8 +151,14 @@ export function Navbar({ items }: TNavbarProps) {
       </div>
 
       {isOpen ? (
-        <div className="border-t border-site bg-(--color-background)/95 px-4 py-4 backdrop-blur-xl lg:hidden">
-          <nav className="container-custom grid gap-2 text-sm font-medium">
+        <div
+          id="mobile-navigation"
+          className="border-t border-site bg-(--color-background)/95 px-4 py-4 backdrop-blur-xl lg:hidden"
+        >
+          <nav
+            aria-label="Mobile navigation"
+            className="container-custom grid gap-2 text-sm font-medium"
+          >
             {navItems.map((item) => (
               <a
                 key={item.id}

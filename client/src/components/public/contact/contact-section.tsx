@@ -1,11 +1,20 @@
 "use client";
 
-import { Mail, MapPin, Phone, Send, Smartphone } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Mail, MapPin, Phone, Send, Smartphone } from "lucide-react";
+import { useForm } from "react-hook-form";
 
+import {
+  contactFormSchema,
+  TContactFormValues,
+} from "@/components/public/contact/contact-schema";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { getErrorMessage } from "@/lib/get-error-message";
+import { sendContactMessage } from "@/lib/contact-api";
 import { TContactInfo, TSocialLink } from "@/types/portfolio";
+import { useMutation } from "@tanstack/react-query";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 
 type TContactSectionProps = {
@@ -21,6 +30,39 @@ export function ContactSection({
   const phone = contactInfo?.phone || "+880-1518-935876";
   const whatsapp = contactInfo?.whatsapp || "+880-1518-935876";
   const location = contactInfo?.location || "Uttara, Dhaka, Bangladesh";
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<TContactFormValues>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      subject: "",
+      message: "",
+      website: "",
+    },
+  });
+
+  const contactMutation = useMutation({
+    mutationFn: sendContactMessage,
+    onSuccess: () => {
+      reset();
+    },
+  });
+
+  const onSubmit = (values: TContactFormValues) => {
+    contactMutation.mutate({
+      name: values.name,
+      email: values.email,
+      subject: values.subject || undefined,
+      message: values.message,
+      website: values.website,
+    });
+  };
 
   return (
     <section id="contact" className="section-padding border-t border-site">
@@ -122,40 +164,96 @@ export function ContactSection({
             </h3>
 
             <p className="mt-3 text-sm leading-7 text-normal">
-              The form design is ready. In the contact-system phase, this will
-              save messages to the database and send email notifications.
+              Fill out the form below and your message will be saved securely in
+              the admin dashboard.
             </p>
 
-            <form className="mt-6 space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <input
-                  type="text"
-                  placeholder="Your name"
-                  className="rounded-2xl border border-site bg-transparent px-4 py-3 text-sm text-highlight outline-none transition placeholder:text-normal focus:border-(--color-accent)"
-                />
-
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  className="rounded-2xl border border-site bg-transparent px-4 py-3 text-sm text-highlight outline-none transition placeholder:text-normal focus:border-(--color-accent)"
-                />
-              </div>
-
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
               <input
                 type="text"
-                placeholder="Subject"
-                className="w-full rounded-2xl border border-site bg-transparent px-4 py-3 text-sm text-highlight outline-none transition placeholder:text-normal focus:border-(--color-accent)"
+                tabIndex={-1}
+                autoComplete="off"
+                className="hidden"
+                {...register("website")}
               />
 
-              <textarea
-                placeholder="Message"
-                rows={6}
-                className="w-full resize-none rounded-2xl border border-site bg-transparent px-4 py-3 text-sm text-highlight outline-none transition placeholder:text-normal focus:border-(--color-accent)"
-              />
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Your name"
+                    className="w-full rounded-2xl border border-site bg-transparent px-4 py-3 text-sm text-highlight outline-none transition placeholder:text-normal focus:border-(--color-accent)"
+                    {...register("name")}
+                  />
+                  {errors.name ? (
+                    <p className="mt-2 text-xs text-red-400">
+                      {errors.name.message}
+                    </p>
+                  ) : null}
+                </div>
 
-              <Button type="button">
-                Submit Coming Soon
-                <Send className="ml-2" size={17} />
+                <div>
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    className="w-full rounded-2xl border border-site bg-transparent px-4 py-3 text-sm text-highlight outline-none transition placeholder:text-normal focus:border-(--color-accent)"
+                    {...register("email")}
+                  />
+                  {errors.email ? (
+                    <p className="mt-2 text-xs text-red-400">
+                      {errors.email.message}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+
+              <div>
+                <input
+                  type="text"
+                  placeholder="Subject"
+                  className="w-full rounded-2xl border border-site bg-transparent px-4 py-3 text-sm text-highlight outline-none transition placeholder:text-normal focus:border-(--color-accent)"
+                  {...register("subject")}
+                />
+                {errors.subject ? (
+                  <p className="mt-2 text-xs text-red-400">
+                    {errors.subject.message}
+                  </p>
+                ) : null}
+              </div>
+
+              <div>
+                <textarea
+                  placeholder="Message"
+                  rows={6}
+                  className="w-full resize-none rounded-2xl border border-site bg-transparent px-4 py-3 text-sm text-highlight outline-none transition placeholder:text-normal focus:border-(--color-accent)"
+                  {...register("message")}
+                />
+                {errors.message ? (
+                  <p className="mt-2 text-xs text-red-400">
+                    {errors.message.message}
+                  </p>
+                ) : null}
+              </div>
+
+              {contactMutation.isSuccess ? (
+                <div className="rounded-2xl border border-(--color-accent)/30 bg-(--color-accent)/10 p-4 text-sm text-accent">
+                  Message sent successfully. I will get back to you soon.
+                </div>
+              ) : null}
+
+              {contactMutation.error ? (
+                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+                  {getErrorMessage(contactMutation.error)}
+                </div>
+              ) : null}
+
+              <Button type="submit" disabled={contactMutation.isPending}>
+                {contactMutation.isPending ? (
+                  <Loader2 className="mr-2 animate-spin" size={17} />
+                ) : (
+                  <Send className="mr-2" size={17} />
+                )}
+                {contactMutation.isPending ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </Card>

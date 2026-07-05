@@ -7,6 +7,11 @@ export const getPortfolio = async () => {
   return res.data.data;
 };
 
+export const getProjects = async () => {
+  const res = await api.get<TApiResponse<TProject[]>>("/public/projects");
+  return res.data.data || [];
+};
+
 export const getProjectBySlug = async (slug: string) => {
   const res = await api.get<TApiResponse<TProject>>(
     `/public/projects/${slug}`

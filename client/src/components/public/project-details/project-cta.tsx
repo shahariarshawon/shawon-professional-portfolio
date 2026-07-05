@@ -24,12 +24,13 @@ export function ProjectCTA() {
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-
-            
-            <a href="/#contact" className={cn(buttonVariants({ size: "lg" }))}>
+            <Link
+              href="/#contact"
+              className={cn(buttonVariants({ size: "lg" }))}
+            >
               <Mail className="mr-2" size={18} />
               Contact Me
-            </a>
+            </Link>
 
             <Link
               href="/#projects"

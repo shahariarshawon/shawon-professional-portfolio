@@ -179,7 +179,11 @@ export function ContactSection({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
+                  <label htmlFor="contact-name" className="sr-only">
+                    Your name
+                  </label>
                   <input
+                    id="contact-name"
                     type="text"
                     placeholder="Your name"
                     className="w-full rounded-2xl border border-site bg-transparent px-4 py-3 text-sm text-highlight outline-none transition placeholder:text-normal focus:border-(--color-accent)"

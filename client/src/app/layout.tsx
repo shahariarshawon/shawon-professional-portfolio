@@ -8,7 +8,7 @@ import "./globals.css";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-  display: "swap"
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
   title: {
     default: siteConfig.title,
-    template: `%s | ${siteConfig.shortName}`
+    template: `%s | ${siteConfig.shortName}`,
   },
 
   description: siteConfig.description,
@@ -26,8 +26,8 @@ export const metadata: Metadata = {
   authors: [
     {
       name: siteConfig.author,
-      url: siteConfig.url
-    }
+      url: siteConfig.url,
+    },
   ],
 
   creator: siteConfig.author,
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   applicationName: siteConfig.shortName,
 
   alternates: {
-    canonical: siteConfig.url
+    canonical: siteConfig.url,
   },
 
   openGraph: {
@@ -45,14 +45,14 @@ export const metadata: Metadata = {
     url: siteConfig.url,
     siteName: siteConfig.shortName,
     locale: siteConfig.locale,
-    type: "website"
+    type: "website",
   },
 
   twitter: {
     card: "summary_large_image",
     title: siteConfig.title,
     description: siteConfig.description,
-    creator: "@shawon"
+    creator: "@shawon",
   },
 
   robots: {
@@ -63,11 +63,11 @@ export const metadata: Metadata = {
       follow: true,
       "max-image-preview": "large",
       "max-snippet": -1,
-      "max-video-preview": -1
-    }
+      "max-video-preview": -1,
+    },
   },
 
-  category: "technology"
+  category: "technology",
 };
 
 export const viewport: Viewport = {
@@ -75,7 +75,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: "#11172a",
-  colorScheme: "dark light"
+  colorScheme: "dark light",
 };
 
 type TRootLayoutProps = {
@@ -86,7 +86,12 @@ export default function RootLayout({ children }: TRootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <a href="#main-content" className="skip-link">
+            Skip to main content
+          </a>
+          {children}
+        </AppProviders>
       </body>
     </html>
   );

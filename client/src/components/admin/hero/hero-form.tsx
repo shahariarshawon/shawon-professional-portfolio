@@ -11,10 +11,7 @@ import { AdminInput } from "@/components/admin/shared/admin-input";
 import { AdminTextarea } from "@/components/admin/shared/admin-textarea";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  THeroUpdatePayload,
-  updateAdminHero
-} from "@/lib/admin-api";
+import { THeroUpdatePayload, updateAdminHero } from "@/lib/admin-api";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { uploadSingleFile, uploadSingleImage } from "@/lib/upload-api";
 import { cn } from "@/lib/utils";
@@ -34,7 +31,7 @@ export function HeroForm({ hero }: THeroFormProps) {
 
   const form = useForm<THeroFormValues>({
     resolver: zodResolver(heroFormSchema),
-    defaultValues: getHeroFormDefaults(hero)
+    defaultValues: getHeroFormDefaults(hero),
   });
 
   const {
@@ -43,7 +40,7 @@ export function HeroForm({ hero }: THeroFormProps) {
     control,
     setValue,
     watch,
-    formState: { errors, isDirty }
+    formState: { errors, isDirty },
   } = form;
 
   const photoUrl = watch("photoUrl");
@@ -51,17 +48,17 @@ export function HeroForm({ hero }: THeroFormProps) {
 
   const badgeFields = useFieldArray({
     control,
-    name: "badges"
+    name: "badges",
   });
 
   const techFields = useFieldArray({
     control,
-    name: "techHighlights"
+    name: "techHighlights",
   });
 
   const socialFields = useFieldArray({
     control,
-    name: "socialLinks"
+    name: "socialLinks",
   });
 
   const updateMutation = useMutation({
@@ -69,16 +66,16 @@ export function HeroForm({ hero }: THeroFormProps) {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: ["admin-hero"]
+          queryKey: ["admin-hero"],
         }),
         queryClient.invalidateQueries({
-          queryKey: ["admin-dashboard-overview"]
+          queryKey: ["admin-dashboard-overview"],
         }),
         queryClient.invalidateQueries({
-          queryKey: ["portfolio"]
-        })
+          queryKey: ["portfolio"],
+        }),
       ]);
-    }
+    },
   });
 
   const photoUploadMutation = useMutation({
@@ -87,10 +84,10 @@ export function HeroForm({ hero }: THeroFormProps) {
       if (result?.secureUrl) {
         setValue("photoUrl", result.secureUrl, {
           shouldDirty: true,
-          shouldValidate: true
+          shouldValidate: true,
         });
       }
-    }
+    },
   });
 
   const resumeUploadMutation = useMutation({
@@ -99,10 +96,10 @@ export function HeroForm({ hero }: THeroFormProps) {
       if (result?.secureUrl) {
         setValue("resumeUrl", result.secureUrl, {
           shouldDirty: true,
-          shouldValidate: true
+          shouldValidate: true,
         });
       }
-    }
+    },
   });
 
   const onSubmit = (values: THeroFormValues) => {
@@ -118,27 +115,27 @@ export function HeroForm({ hero }: THeroFormProps) {
       badges: values.badges.map((badge, index) => ({
         text: badge.text,
         order: Number(badge.order) || index + 1,
-        isEnabled: badge.isEnabled
+        isEnabled: badge.isEnabled,
       })),
       techHighlights: values.techHighlights.map((tech, index) => ({
         name: tech.name,
         order: Number(tech.order) || index + 1,
-        isEnabled: tech.isEnabled
+        isEnabled: tech.isEnabled,
       })),
       socialLinks: values.socialLinks.map((link, index) => ({
         platform: link.platform,
         url: link.url,
         icon: link.icon || null,
         order: Number(link.order) || index + 1,
-        isEnabled: link.isEnabled
-      }))
+        isEnabled: link.isEnabled,
+      })),
     };
 
     updateMutation.mutate(payload);
   };
 
   const handlePhotoFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
 
@@ -150,7 +147,7 @@ export function HeroForm({ hero }: THeroFormProps) {
   };
 
   const handleResumeFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
 
@@ -369,7 +366,9 @@ export function HeroForm({ hero }: THeroFormProps) {
                   type="number"
                   min={1}
                   error={errors.badges?.[index]?.order?.message}
-                  {...register(`badges.${index}.order`)}
+                  {...register(`badges.${index}.order`, {
+                    valueAsNumber: true,
+                  })}
                 />
 
                 <AdminCheckbox
@@ -396,7 +395,7 @@ export function HeroForm({ hero }: THeroFormProps) {
               badgeFields.append({
                 text: "",
                 order: badgeFields.fields.length + 1,
-                isEnabled: true
+                isEnabled: true,
               })
             }
           >
@@ -426,7 +425,9 @@ export function HeroForm({ hero }: THeroFormProps) {
                   type="number"
                   min={1}
                   error={errors.techHighlights?.[index]?.order?.message}
-                  {...register(`techHighlights.${index}.order`)}
+                  {...register(`techHighlights.${index}.order`, {
+                    valueAsNumber: true,
+                  })}
                 />
 
                 <AdminCheckbox
@@ -453,7 +454,7 @@ export function HeroForm({ hero }: THeroFormProps) {
               techFields.append({
                 name: "",
                 order: techFields.fields.length + 1,
-                isEnabled: true
+                isEnabled: true,
               })
             }
           >
@@ -498,7 +499,9 @@ export function HeroForm({ hero }: THeroFormProps) {
                     type="number"
                     min={1}
                     error={errors.socialLinks?.[index]?.order?.message}
-                    {...register(`socialLinks.${index}.order`)}
+                    {...register(`socialLinks.${index}.order`, {
+                      valueAsNumber: true,
+                    })}
                   />
 
                   <AdminCheckbox
@@ -528,7 +531,7 @@ export function HeroForm({ hero }: THeroFormProps) {
                 url: "",
                 icon: "",
                 order: socialFields.fields.length + 1,
-                isEnabled: true
+                isEnabled: true,
               })
             }
           >

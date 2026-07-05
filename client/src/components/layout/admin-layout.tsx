@@ -26,7 +26,7 @@ export function AdminLayout({ children }: TAdminLayoutProps) {
           <div
             className={cn(
               "fixed inset-0 z-50 lg:hidden",
-              isMobileSidebarOpen ? "block" : "hidden"
+              isMobileSidebarOpen ? "block" : "hidden",
             )}
           >
             <button
@@ -53,7 +53,9 @@ export function AdminLayout({ children }: TAdminLayoutProps) {
           <div className="min-w-0">
             <AdminTopbar onMenuClick={() => setIsMobileSidebarOpen(true)} />
 
-            <main className="p-4 md:p-8">{children}</main>
+            <main id="main-content" className="p-4 md:p-8">
+              {children}
+            </main>
           </div>
         </div>
       </div>

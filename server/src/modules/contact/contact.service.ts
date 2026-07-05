@@ -11,6 +11,7 @@ type TCreateContactMessagePayload = {
 const createContactMessage = async (payload: TCreateContactMessagePayload) => {
   const { website, subject, ...messageData } = payload;
 
+  // Honeypot spam protection
   if (website && website.trim().length > 0) {
     return null;
   }
@@ -19,7 +20,7 @@ const createContactMessage = async (payload: TCreateContactMessagePayload) => {
     data: {
       name: messageData.name,
       email: messageData.email,
-      subject: subject || null,
+      subject: subject?.trim() || "Portfolio Contact Message",
       message: messageData.message,
       status: "UNREAD"
     }

@@ -1,6 +1,6 @@
 import AppError from "../../errors/AppError";
 import prisma from "../../utils/prisma";
-
+import { Prisma } from "../../generated/prisma/client";
 type TContactMessageStatus = "READ" | "UNREAD";
 
 type TAnyObject = Record<string, any>;
@@ -157,7 +157,7 @@ const updateHero = async (payload: TAnyObject) => {
     });
   }
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.heroSection.update({
       where: {
         id: existingHero.id
@@ -301,7 +301,7 @@ const updateAbout = async (payload: TAnyObject) => {
     });
   }
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.aboutSection.update({
       where: {
         id: existingAbout.id
@@ -429,7 +429,7 @@ const createExperience = async (payload: TAnyObject) => {
 const updateExperience = async (id: string, payload: TAnyObject) => {
   const { bullets, metrics, ...experienceData } = payload;
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.experience.update({
       where: {
         id
@@ -667,7 +667,7 @@ const createProject = async (payload: TAnyObject) => {
 const updateProject = async (id: string, payload: TAnyObject) => {
   const { images, features, challenges, improvements, ...projectData } = payload;
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.project.update({
       where: {
         id

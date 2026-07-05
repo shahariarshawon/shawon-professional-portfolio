@@ -6,9 +6,11 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/server.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "migrate:deploy": "prisma migrate deploy",
+    "seed": "prisma db seed"
   },
   "keywords": [
     "express",

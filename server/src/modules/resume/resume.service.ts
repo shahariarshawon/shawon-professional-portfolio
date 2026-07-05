@@ -1,3 +1,5 @@
+import { Prisma } from "../../generated/prisma/client";
+
 import AppError from "../../errors/AppError";
 import prisma from "../../utils/prisma";
 
@@ -184,66 +186,68 @@ const updateActiveResume = async (payload: TUpdateResumePayload) => {
     });
   }
 
-  const result = await prisma.$transaction(async (tx) => {
-    await tx.resumeSection.deleteMany({
-      where: {
-        resumeId: existingResume.id
-      }
-    });
-
-    await tx.resumeProject.deleteMany({
-      where: {
-        resumeId: existingResume.id
-      }
-    });
-
-    await tx.resumeSkill.deleteMany({
-      where: {
-        resumeId: existingResume.id
-      }
-    });
-
-    return tx.resume.update({
-      where: {
-        id: existingResume.id
-      },
-      data: {
-        title: payload.title,
-        targetRole: payload.targetRole,
-        summary: payload.summary,
-        isActive: payload.isActive,
-
-        sections: {
-          create: payload.sections.map((section, index) => ({
-            title: section.title,
-            content: section.content,
-            order: section.order || index + 1,
-            isEnabled: section.isEnabled
-          }))
-        },
-
-        projects: {
-          create: payload.projects.map((project, index) => ({
-            name: project.name,
-            description: project.description,
-            techStack: project.techStack,
-            liveLink: project.liveLink || "",
-            githubLink: project.githubLink || "",
-            order: project.order || index + 1
-          }))
-        },
-
-        skills: {
-          create: payload.skills.map((skill, index) => ({
-            category: skill.category,
-            skills: skill.skills,
-            order: skill.order || index + 1
-          }))
+  const result = await prisma.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      await tx.resumeSection.deleteMany({
+        where: {
+          resumeId: existingResume.id
         }
-      },
-      include: resumeInclude
-    });
-  });
+      });
+
+      await tx.resumeProject.deleteMany({
+        where: {
+          resumeId: existingResume.id
+        }
+      });
+
+      await tx.resumeSkill.deleteMany({
+        where: {
+          resumeId: existingResume.id
+        }
+      });
+
+      return tx.resume.update({
+        where: {
+          id: existingResume.id
+        },
+        data: {
+          title: payload.title,
+          targetRole: payload.targetRole,
+          summary: payload.summary,
+          isActive: payload.isActive,
+
+          sections: {
+            create: payload.sections.map((section, index) => ({
+              title: section.title,
+              content: section.content,
+              order: section.order || index + 1,
+              isEnabled: section.isEnabled
+            }))
+          },
+
+          projects: {
+            create: payload.projects.map((project, index) => ({
+              name: project.name,
+              description: project.description,
+              techStack: project.techStack,
+              liveLink: project.liveLink || "",
+              githubLink: project.githubLink || "",
+              order: project.order || index + 1
+            }))
+          },
+
+          skills: {
+            create: payload.skills.map((skill, index) => ({
+              category: skill.category,
+              skills: skill.skills,
+              order: skill.order || index + 1
+            }))
+          }
+        },
+        include: resumeInclude
+      });
+    }
+  );
 
   return result;
 };

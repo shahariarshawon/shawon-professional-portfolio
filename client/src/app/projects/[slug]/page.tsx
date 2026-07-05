@@ -14,7 +14,7 @@ type TProjectDetailsPageProps = {
 };
 
 export async function generateMetadata({
-  params
+  params,
 }: TProjectDetailsPageProps): Promise<Metadata> {
   const { slug } = await params;
 
@@ -23,38 +23,61 @@ export async function generateMetadata({
   if (!project) {
     return {
       title: `Project Not Found | ${siteConfig.shortName}`,
-      description: "The requested project could not be found."
+      description: "The requested project could not be found.",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
+
+  const projectUrl = `${siteConfig.url}/projects/${project.slug}`;
+  const imageUrl = project.images?.[0]?.url;
 
   return {
     title: `${project.name} | ${siteConfig.shortName}`,
     description: project.shortDescription,
+    keywords: [
+      project.name,
+      ...project.techStack,
+      "Backend Project",
+      "Full-Stack Project",
+      "Software Engineering Project",
+    ],
+    alternates: {
+      canonical: projectUrl,
+    },
     openGraph: {
       title: `${project.name} | ${siteConfig.shortName}`,
       description: project.shortDescription,
-      url: `${siteConfig.url}/projects/${project.slug}`,
+      url: projectUrl,
       type: "article",
-      images: project.images?.[0]?.url
+      images: imageUrl
         ? [
             {
-              url: project.images[0].url,
-              alt: project.images[0].altText || project.name
-            }
+              url: imageUrl,
+              alt: project.images?.[0]?.altText || project.name,
+            },
           ]
-        : undefined
-    }
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${project.name} | ${siteConfig.shortName}`,
+      description: project.shortDescription,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
   };
 }
 
 export default async function ProjectDetailsPage({
-  params
+  params,
 }: TProjectDetailsPageProps) {
   const { slug } = await params;
 
   const [project, portfolio] = await Promise.all([
     getProjectBySlug(slug).catch(() => null),
-    getPortfolio().catch(() => null)
+    getPortfolio().catch(() => null),
   ]);
 
   if (!project) {

@@ -5,6 +5,7 @@ import authRoutes from "../modules/auth/auth.route";
 import publicRoutes from "../modules/public/public.route";
 import adminRoutes from "../modules/admin/admin.route";
 import uploadRoutes from "../modules/upload/upload.route";
+import contactRoutes from "../modules/contact/contact.route";
 
 const router = Router();
 
@@ -32,6 +33,10 @@ const moduleRoutes = [
   {
     path: "/upload",
     route: uploadRoutes,
+  },
+  {
+    path: "/contact",
+    route: contactRoutes,
   },
 ];
 

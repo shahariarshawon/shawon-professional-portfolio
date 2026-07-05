@@ -2,6 +2,7 @@ import { api } from "@/lib/api";
 import { TApiResponse } from "@/types/api";
 import { TContactMessage, TDashboardOverview } from "@/types/admin";
 import { THeroSection } from "@/types/portfolio";
+import { TResume, TResumeUpdatePayload } from "@/types/resume";
 
 export type THeroUpdatePayload = {
   name: string;
@@ -86,6 +87,20 @@ export const markAdminMessageAsUnread = async (id: string) => {
 export const deleteAdminMessage = async (id: string) => {
   const res = await api.delete<TApiResponse<TContactMessage>>(
     `/admin/messages/${id}`
+  );
+
+  return res.data.data;
+};
+
+export const getAdminResume = async () => {
+  const res = await api.get<TApiResponse<TResume>>("/admin/resume");
+  return res.data.data;
+};
+
+export const updateAdminResume = async (payload: TResumeUpdatePayload) => {
+  const res = await api.patch<TApiResponse<TResume>>(
+    "/admin/resume",
+    payload
   );
 
   return res.data.data;

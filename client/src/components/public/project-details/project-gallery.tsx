@@ -12,10 +12,7 @@ type TProjectGalleryProps = {
   projectName: string;
 };
 
-export function ProjectGallery({
-  images,
-  projectName
-}: TProjectGalleryProps) {
+export function ProjectGallery({ images, projectName }: TProjectGalleryProps) {
   const [activeImage, setActiveImage] = useState(images[0] || null);
 
   if (!images.length) {
@@ -45,6 +42,8 @@ export function ProjectGallery({
           <img
             src={previewImage.url}
             alt={previewImage.altText || projectName}
+            loading="eager"
+            decoding="async"
             className="h-full w-full object-cover"
           />
         </div>
@@ -64,7 +63,7 @@ export function ProjectGallery({
                   "overflow-hidden rounded-2xl border bg-card transition",
                   isActive
                     ? "border-(--color-accent)"
-                    : "border-site hover:border-(--color-accent)"
+                    : "border-site hover:border-(--color-accent)",
                 )}
               >
                 <span className="sr-only">
@@ -74,6 +73,8 @@ export function ProjectGallery({
                 <img
                   src={image.url}
                   alt={image.altText || projectName}
+                  loading="lazy"
+                  decoding="async"
                   className="aspect-video h-full w-full object-cover"
                 />
               </button>

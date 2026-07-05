@@ -33,6 +33,8 @@ export function ProjectsSection({ projects }: TProjectsSectionProps) {
                     <img
                       src={image.url}
                       alt={image.altText || project.name}
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover"
                     />
                   ) : (

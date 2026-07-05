@@ -19,7 +19,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-site">
       <Navbar items={portfolio?.navbar || []} />
 
-      <main>
+      <main id="main-content">
         <HeroSection hero={portfolio?.hero || null} />
         <AboutSection about={portfolio?.about || null} />
         <ExperienceSection experiences={portfolio?.experience || []} />

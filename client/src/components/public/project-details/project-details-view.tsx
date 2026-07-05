@@ -19,18 +19,21 @@ type TProjectDetailsViewProps = {
 export function ProjectDetailsView({
   project,
   navbar,
-  footer
+  footer,
 }: TProjectDetailsViewProps) {
   return (
     <div className="min-h-screen bg-site">
       <Navbar items={navbar} />
 
-      <main>
+      <main id="main-content">
         <ProjectHero project={project} />
 
         <section className="pb-20">
           <div className="container-custom">
-            <ProjectGallery images={project.images || []} projectName={project.name} />
+            <ProjectGallery
+              images={project.images || []}
+              projectName={project.name}
+            />
           </div>
         </section>
 

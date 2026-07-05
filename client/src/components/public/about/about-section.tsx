@@ -71,6 +71,7 @@ export function AboutSection({ about }: TAboutSectionProps) {
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
                     {fact.label}
                   </p>
+
                   <p className="mt-2 text-sm font-medium leading-6 text-highlight">
                     {fact.value}
                   </p>

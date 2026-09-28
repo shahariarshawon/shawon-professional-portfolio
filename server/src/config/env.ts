@@ -24,5 +24,8 @@ export const env = {
     from: process.env.EMAIL_FROM || "",
     to: process.env.EMAIL_TO || "shahariarshawon.dev@gmail.com",
     resendApiKey: process.env.RESEND_API_KEY || ""
-  }
+  },
+
+  redisUrl: process.env.REDIS_URL || "",
+  geminiApiKey: process.env.GEMINI_API_KEY || ""
 };

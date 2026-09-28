@@ -1,7 +1,6 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { geminiService } from "../gemini.service";
 
 export const evaluatePortfolioScore = async (portfolioData: any) => {
-  const llm = new ChatOpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4o" });
   const prompt = `You are an elite Software Engineering Manager evaluating a candidate's portfolio.
 Data:
 ${JSON.stringify(portfolioData)}
@@ -15,11 +14,11 @@ Evaluate this portfolio and generate a JSON response (no markdown) with:
 - overallScore (0-100)
 - improvementSuggestions (array of strings)
 `;
-  const response = await llm.invoke([{ role: "user", content: prompt }]);
+  
+  const responseStr = await geminiService.generateCachedResponse("You are an evaluator.", prompt, "gemini-1.5-flash", 86400);
   
   try {
-    const raw = response.content as string;
-    return JSON.parse(raw.replace(/```json/g, '').replace(/```/g, '').trim());
+    return JSON.parse(responseStr.replace(/```json/g, '').replace(/```/g, '').trim());
   } catch (error) {
     console.error("Failed to parse portfolio score", error);
     return null;

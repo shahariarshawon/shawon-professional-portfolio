@@ -49,6 +49,19 @@ app.get("/", (_req, res) => {
   });
 });
 
+import { redisService } from "./common/redis/redis.service";
+
+app.get("/healthz", (_req, res) => {
+  const isRedisConnected = redisService.getClient()?.status === "ready";
+  const isAiConfigured = !!env.geminiApiKey;
+  
+  res.status(200).json({
+    status: "ok",
+    redis: isRedisConnected ? "connected" : "disconnected",
+    ai: isAiConfigured ? "available" : "unavailable"
+  });
+});
+
 app.use("/api", router);
 
 app.use(notFound);

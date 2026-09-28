@@ -1,9 +1,7 @@
-import { ChatOpenAI } from "@langchain/openai";
 import prisma from "../../../utils/prisma";
+import { geminiService } from "../gemini.service";
 
 export const osCommandCenter = async (query: string) => {
-  const llm = new ChatOpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4o" });
-  
   // In a real OS, we fetch relevant dashboard metrics first
   const brandScores = await prisma.brandHealthScore.findMany({ take: 1, orderBy: { createdAt: 'desc' } });
   const opportunities = await prisma.opportunity.count({ where: { status: "NEW" } });
@@ -18,6 +16,5 @@ export const osCommandCenter = async (query: string) => {
   Query: "${query}"
   `;
   
-  const response = await llm.invoke([{ role: "system", content: systemContext }]);
-  return response.content as string;
+  return geminiService.generateCachedResponse(systemContext, query, "gemini-1.5-flash", 60);
 };

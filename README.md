@@ -4,7 +4,7 @@ This project is a fully autonomous, AI-driven personal developer platform and ec
 
 ## Features
 - **Premium Portfolio & CMS**: Enterprise-grade frontend design with integrated content management.
-- **AI Orchestrator**: LangChain + GPT-4o architecture to route and process semantic knowledge.
+- **AI Orchestrator**: LangChain + Gemini (Google GenAI) architecture to route and process semantic knowledge.
 - **Job Matching & CRM**: Autonomously parses inbound recruiter emails, categorizes opportunities, and drafts responses.
 - **Career Intelligence Engine**: Generates 30/90/180-day personal learning roadmaps based on vector database history.
 - **Blog & Content Automation**: Schedules and auto-generates Markdown articles and LinkedIn drafts using BullMQ.
@@ -15,7 +15,7 @@ This project is a fully autonomous, AI-driven personal developer platform and ec
 - **Frontend**: Next.js (App Router), TypeScript, Tailwind CSS, Framer Motion
 - **Backend**: Node.js, Express.js, TypeScript
 - **Database**: PostgreSQL with `pgvector` (via Prisma ORM)
-- **AI**: OpenAI API, LangChain, RAG (Retrieval-Augmented Generation)
+- **AI**: Google Gemini API, LangChain, RAG (Retrieval-Augmented Generation)
 - **Infrastructure**: Redis (BullMQ queues), Vercel (Frontend), Render (Backend)
 
 ## Architecture
@@ -23,7 +23,7 @@ This project is a fully autonomous, AI-driven personal developer platform and ec
 [ Frontend (Next.js) ] -> [ Backend API (Express.js) ] -> [ AI Orchestrator Layer ]
                                    |                               |
                                    v                               v
-                       [ PostgreSQL / pgvector ]    [ External LLMs (OpenAI) ]
+                       [ PostgreSQL / pgvector ]    [ External LLMs (Gemini) ]
 ```
 
 ## Folder Structure
@@ -49,7 +49,7 @@ pnpm install
 3. **Environment Setup**
 Copy `.env.example` to `.env` in both `client/` and `server/` directories.
 - Frontend requires `NEXT_PUBLIC_API_URL`
-- Backend requires PostgreSQL `DATABASE_URL`, `OPENAI_API_KEY`, `REDIS_HOST`, `JWT_SECRET`, etc.
+- Backend requires PostgreSQL `DATABASE_URL`, `GEMINI_API_KEY`, `REDIS_URL`, `JWT_SECRET`, etc.
 
 4. **Database Setup & Migration**
 ```bash
@@ -72,10 +72,10 @@ pnpm run dev
 - `NODE_ENV`: Application environment (`development` | `production`)
 - `PORT`: Server port (e.g., `5000`)
 - `DATABASE_URL`: Connection string for PostgreSQL
-- `REDIS_HOST` / `REDIS_PORT`: For background queues.
+- `REDIS_URL`: Unified Redis connection string for caching and queues.
 - `JWT_SECRET`: Used to sign Admin JWT tokens.
 - `CLIENT_URL`: URL of the deployed frontend for CORS.
-- `OPENAI_API_KEY`: API Key for AI Agents.
+- `GEMINI_API_KEY`: API Key for AI Agents (Google GenAI).
 
 ### Frontend (`client/.env.example`)
 - `NEXT_PUBLIC_API_URL`: The URL to the Express backend (e.g., `https://your-backend.onrender.com/api`).
@@ -94,7 +94,7 @@ pnpm run dev
 1. Create a new "Web Service" on Render.
 2. Connect your GitHub repository and set the root directory to `server`.
 3. Render will auto-detect the `render.yaml` configuration.
-4. Add all production Environment Variables (`DATABASE_URL`, `OPENAI_API_KEY`, `JWT_SECRET`, `CLIENT_URL`, etc.).
+4. Add all production Environment Variables (`DATABASE_URL`, `GEMINI_API_KEY`, `JWT_SECRET`, `CLIENT_URL`, etc.).
 5. Render runs `pnpm install && pnpm build`, migrating your Prisma database implicitly via scripts.
 
 ---
@@ -121,4 +121,4 @@ pnpm run dev
 - **CORS Error**: Ensure `CLIENT_URL` exactly matches your Vercel URL without a trailing slash.
 - **Database Connection**: Ensure `pgvector` extension is enabled on your PostgreSQL host (e.g. Supabase, Neon).
 - **Cookie Auth Issue**: Safari limits cross-site cookies. Ensure your Vercel Frontend and Render Backend use the same top-level domain if strict restrictions apply.
-- **AI Queue Failure**: Ensure Redis is active via `REDIS_HOST` for `BullMQ` to process offline jobs.
+- **AI Queue Failure**: Ensure Redis is active via `REDIS_URL` for `BullMQ` to process offline jobs.

@@ -1,10 +1,9 @@
-import { ChatOpenAI } from "@langchain/openai";
 import { searchSimilarDocuments } from "../vector.service";
+import { geminiService } from "../gemini.service";
 
 export type AgentRole = "RECRUITER" | "CONTENT" | "CODE_REVIEW" | "CAREER" | "ROUTER";
 
 export const agentRouter = async (query: string): Promise<AgentRole> => {
-  const llm = new ChatOpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4o-mini", temperature: 0 });
   const prompt = `Analyze this query and route it to the correct AI Agent.
 Query: "${query}"
 
@@ -16,8 +15,8 @@ Roles:
 
 Respond with exactly ONE word matching the role. If unsure, respond RECRUITER.`;
 
-  const response = await llm.invoke([{ role: "user", content: prompt }]);
-  const role = (response.content as string).trim().toUpperCase();
+  const response = await geminiService.generateCachedResponse("You are an AI router.", prompt, "gemini-1.5-flash", 60);
+  const role = response.trim().toUpperCase();
   
   if (["RECRUITER", "CONTENT", "CODE_REVIEW", "CAREER"].includes(role)) {
     return role as AgentRole;
@@ -33,7 +32,6 @@ export const executeAgent = async (sessionId: string, query: string) => {
   const docs: any = await searchSimilarDocuments(query, 5);
   const context = docs.map((d: any) => d.content).join("\n\n");
   
-  const llm = new ChatOpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4o" });
   let systemPrompt = "";
 
   switch (role) {
@@ -51,13 +49,10 @@ export const executeAgent = async (sessionId: string, query: string) => {
       break;
   }
 
-  const response = await llm.invoke([
-    { role: "system", content: systemPrompt },
-    { role: "user", content: query }
-  ]);
+  const response = await geminiService.generateCachedResponse(systemPrompt, query, "gemini-1.5-flash", 3600);
   
   return {
     role,
-    response: response.content as string
+    response
   };
 };

@@ -1,8 +1,6 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { geminiService } from "../gemini.service";
 
 export const generateProjectBlueprint = async (idea: string) => {
-  const llm = new ChatOpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4o" });
-  
   const prompt = `You are a Principal Software Engineer. Create a highly detailed technical blueprint for the following project idea: "${idea}"
 
 Respond strictly with a JSON object (no markdown) containing:
@@ -15,11 +13,10 @@ Respond strictly with a JSON object (no markdown) containing:
   "roadmap": ["string", "array", "of", "milestones"]
 }`;
 
-  const response = await llm.invoke([{ role: "user", content: prompt }]);
+  const responseStr = await geminiService.generateCachedResponse("You are a Principal Software Engineer.", prompt, "gemini-1.5-flash", 3600);
   
   try {
-    const raw = response.content as string;
-    return JSON.parse(raw.replace(/```json/g, '').replace(/```/g, '').trim());
+    return JSON.parse(responseStr.replace(/```json/g, '').replace(/```/g, '').trim());
   } catch (error) {
     console.error("Failed to parse project blueprint", error);
     return null;

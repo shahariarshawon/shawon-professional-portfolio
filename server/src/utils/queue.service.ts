@@ -1,18 +1,17 @@
 import { Queue, Worker } from "bullmq";
 import { generateBlogSummary } from "../modules/ai/chat.service";
+import IORedis from "ioredis";
+import { env } from "../config/env";
 
-const connection = {
-  host: process.env.REDIS_HOST || "localhost",
-  port: parseInt(process.env.REDIS_PORT || "6379")
-};
+const connection = env.redisUrl ? new IORedis(env.redisUrl, { maxRetriesPerRequest: null }) : null;
 
 // Define Queues
-export const automationQueue = new Queue("brand-automation", { connection });
-export const scheduledContentQueue = new Queue("content-scheduler", { connection });
+export const automationQueue = connection ? new Queue("brand-automation", { connection }) : null;
+export const scheduledContentQueue = connection ? new Queue("content-scheduler", { connection }) : null;
 
 // Initialize Workers
 export const initWorkers = () => {
-  if (process.env.NODE_ENV === "test" || !process.env.REDIS_HOST) {
+  if (process.env.NODE_ENV === "test" || !connection) {
     console.log("Redis not configured. Skipping worker initialization.");
     return;
   }

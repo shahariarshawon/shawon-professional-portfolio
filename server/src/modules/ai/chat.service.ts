@@ -1,26 +1,20 @@
-import { ChatOpenAI } from "@langchain/openai";
 import { searchSimilarDocuments } from "./vector.service";
 import prisma from "../../utils/prisma";
+import { geminiService } from "./gemini.service";
 
 export const askAssistant = async (sessionId: string, query: string) => {
   try {
     const docs: any = await searchSimilarDocuments(query, 5);
     const context = docs.map((d: any) => d.content).join("\n\n");
     
-    const llm = new ChatOpenAI({
-      openAIApiKey: process.env.OPENAI_API_KEY,
-      modelName: "gpt-4o-mini",
-      temperature: 0.2
-    });
-    
     const systemPrompt = `You are Shahariar's AI Portfolio Assistant. Answer the user's questions strictly using the provided context. If the answer is not in the context, politely say you don't know and invite them to contact Shahariar directly.\n\nContext:\n${context}`;
     
-    const response = await llm.invoke([
-      { role: "system", content: systemPrompt },
-      { role: "user", content: query }
-    ]);
-    
-    const answer = response.content as string;
+    const answer = await geminiService.generateCachedResponse(
+      systemPrompt, 
+      query, 
+      "gemini-1.5-flash", 
+      3600
+    );
     
     await prisma.aIConversation.create({
       data: {
@@ -38,31 +32,33 @@ export const askAssistant = async (sessionId: string, query: string) => {
 };
 
 export const generateBlogSummary = async (content: string) => {
-  const llm = new ChatOpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4o-mini" });
-  const response = await llm.invoke([{ role: "user", content: `Summarize this blog post for a short description (max 2 sentences):\n\n${content}` }]);
-  return response.content;
+  return geminiService.generateCachedResponse(
+    "Summarize this blog post for a short description (max 2 sentences).",
+    content,
+    "gemini-1.5-flash",
+    86400
+  );
 };
 
 export const suggestSEOTitle = async (content: string) => {
-  const llm = new ChatOpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4o-mini" });
-  const response = await llm.invoke([{ role: "user", content: `Suggest a highly engaging SEO title for this blog post (just the title, no quotes):\n\n${content}` }]);
-  return response.content as string;
+  return geminiService.generateCachedResponse(
+    "Suggest a highly engaging SEO title for this blog post (just the title, no quotes).",
+    content,
+    "gemini-1.5-flash",
+    86400
+  );
 };
 
 export const classifyContactMessage = async (message: string) => {
   try {
-    const llm = new ChatOpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4o-mini", temperature: 0.1 });
     const prompt = `Analyze this contact form message sent to a developer portfolio. 
 Return exactly a valid JSON object (no markdown, no backticks, no quotes) with these keys:
 - category: one of "JOB", "FREELANCE", "COLLABORATION", "GENERAL"
 - priority: one of "HIGH", "MEDIUM", "LOW"
-- summary: a short 1-sentence summary of the visitor's intent (e.g. "This visitor is a recruiter looking for backend developers.")
+- summary: a short 1-sentence summary of the visitor's intent (e.g. "This visitor is a recruiter looking for backend developers.")`;
 
-Message:
-"${message}"`;
-
-    const response = await llm.invoke([{ role: "user", content: prompt }]);
-    const cleanStr = (response.content as string).replace(/```json/g, '').replace(/```/g, '').trim();
+    const response = await geminiService.generateCachedResponse(prompt, message, "gemini-1.5-flash", 60);
+    const cleanStr = response.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanStr) as { category: string, priority: string, summary: string };
   } catch (error) {
     console.error("Classification error:", error);
@@ -71,24 +67,26 @@ Message:
 };
 
 export const generateContentIdeas = async (topic: string) => {
-  const llm = new ChatOpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4o-mini" });
-  const prompt = `Generate 5 technical content ideas (blogs, linkedin posts) based on: "${topic}". Return as a bulleted list.`;
-  const response = await llm.invoke([{ role: "user", content: prompt }]);
-  return response.content as string;
+  return geminiService.generateCachedResponse(
+    "Generate 5 technical content ideas (blogs, linkedin posts) based on the topic. Return as a bulleted list.",
+    topic,
+    "gemini-1.5-flash",
+    3600
+  );
 };
 
 export const generateProjectDocumentation = async (projectData: any) => {
-  const llm = new ChatOpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, modelName: "gpt-4o" });
   const prompt = `Act as a Senior Software Architect. Generate professional README documentation and an architecture breakdown for the following project.
-Project Data:
-${JSON.stringify(projectData, null, 2)}
-
 Format with markdown. Include:
 - Architecture (Frontend, API Layer, Backend Services, Database, AI Layer if applicable)
 - Challenges
 - Solution
 - Impact`;
   
-  const response = await llm.invoke([{ role: "user", content: prompt }]);
-  return response.content as string;
+  return geminiService.generateCachedResponse(
+    prompt,
+    JSON.stringify(projectData, null, 2),
+    "gemini-1.5-flash",
+    86400
+  );
 };

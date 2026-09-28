@@ -28,9 +28,7 @@ services:
         sync: false
       - key: EMAIL_TO
         sync: false
-      - key: OPENAI_API_KEY
+      - key: GEMINI_API_KEY
         sync: false
-      - key: REDIS_HOST
-        sync: false
-      - key: REDIS_PORT
+      - key: REDIS_URL
         sync: false

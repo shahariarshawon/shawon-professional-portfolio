@@ -2,6 +2,7 @@ import app from "./app";
 import { env } from "./config/env";
 import prisma from "./utils/prisma";
 import { QueueService } from "./utils/queue.service";
+import { redisService } from "./common/redis/redis.service";
 
 const server = app.listen(env.port, () => {
   console.log(`Server is running on http://localhost:${env.port}`);
@@ -13,6 +14,7 @@ process.on("unhandledRejection", (reason) => {
 
   server.close(async () => {
     await prisma.$disconnect();
+    await redisService.close();
     process.exit(1);
   });
 });
@@ -21,6 +23,7 @@ process.on("uncaughtException", async (error) => {
   console.error("Uncaught Exception detected:", error);
 
   await prisma.$disconnect();
+  await redisService.close();
   process.exit(1);
 });
 
@@ -29,6 +32,7 @@ process.on("SIGTERM", async () => {
 
   server.close(async () => {
     await prisma.$disconnect();
+    await redisService.close();
     process.exit(0);
   });
 });

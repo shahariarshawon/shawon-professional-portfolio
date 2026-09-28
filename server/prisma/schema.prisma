@@ -1,0 +1,932 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  moduleFormat    = "cjs"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector]
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+enum ExperienceStatus {
+  CURRENTLY_WORKING
+  COMPLETED
+}
+
+enum ContactMessageStatus {
+  NEW
+  CONTACTED
+  REPLIED
+  ARCHIVED
+}
+
+enum ContactMessageCategory {
+  JOB
+  FREELANCE
+  COLLABORATION
+  GENERAL
+}
+
+enum ContactMessagePriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ResumeTargetRole {
+  BACKEND_DEVELOPER
+  FULL_STACK_DEVELOPER
+  SOFTWARE_ENGINEER
+}
+
+enum FileType {
+  IMAGE
+  PDF
+  OTHER
+}
+
+model AdminUser {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      AdminRole @default(ADMIN)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("admin_users")
+}
+
+model NavbarItem {
+  id        String   @id @default(cuid())
+  label     String
+  href      String
+  order     Int      @default(0)
+  isEnabled Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("navbar_items")
+}
+
+model HeroSection {
+  id                      String   @id @default(cuid())
+  name                    String
+  designation             String
+  introduction            String   @db.Text
+  photoUrl                String?
+  resumeUrl               String?
+  location                String?
+  availabilityStatus      String?
+  isGetInTouchEnabled     Boolean  @default(true)
+  isViewResumeEnabled     Boolean  @default(true)
+  isDownloadResumeEnabled Boolean  @default(true)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  badges         HeroBadge[]
+  techHighlights HeroTechHighlight[]
+  socialLinks    SocialLink[]
+
+  @@map("hero_sections")
+}
+
+model HeroBadge {
+  id        String      @id @default(cuid())
+  text      String
+  order     Int         @default(0)
+  isEnabled Boolean     @default(true)
+  heroId    String
+  hero      HeroSection @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("hero_badges")
+}
+
+model HeroTechHighlight {
+  id        String      @id @default(cuid())
+  name      String
+  order     Int         @default(0)
+  isEnabled Boolean     @default(true)
+  heroId    String
+  hero      HeroSection @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("hero_tech_highlights")
+}
+
+model SocialLink {
+  id        String       @id @default(cuid())
+  platform  String
+  url       String
+  icon      String?
+  order     Int          @default(0)
+  isEnabled Boolean      @default(true)
+  heroId    String?
+  hero      HeroSection? @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@map("social_links")
+}
+
+model AboutSection {
+  id                 String   @id @default(cuid())
+  currentStatus      String   @db.Text
+  programmingJourney String   @db.Text
+  workEnjoyment      String   @db.Text
+  backendInterest    String   @db.Text
+  futurePlan         String   @db.Text
+  personality        String   @db.Text
+  hobbies            String?  @db.Text
+  imageUrl           String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  quickFacts QuickFact[]
+
+  @@map("about_sections")
+}
+
+model QuickFact {
+  id        String       @id @default(cuid())
+  label     String
+  value     String       @db.Text
+  order     Int          @default(0)
+  isEnabled Boolean      @default(true)
+  aboutId   String
+  about     AboutSection @relation(fields: [aboutId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@map("quick_facts")
+}
+
+model Experience {
+  id          String           @id @default(cuid())
+  companyName String
+  role        String
+  status      ExperienceStatus @default(COMPLETED)
+  startDate   String
+  endDate     String?
+  location    String?
+  description String           @db.Text
+  companyLogo String?
+  order       Int              @default(0)
+  isEnabled   Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  bullets ExperienceBullet[]
+  metrics ExperienceMetric[]
+
+  @@map("experiences")
+}
+
+model ExperienceBullet {
+  id           String     @id @default(cuid())
+  text         String     @db.Text
+  order        Int        @default(0)
+  experienceId String
+  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("experience_bullets")
+}
+
+model ExperienceMetric {
+  id           String     @id @default(cuid())
+  label        String
+  value        String
+  order        Int        @default(0)
+  experienceId String
+  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("experience_metrics")
+}
+
+model SkillCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  order     Int      @default(0)
+  isEnabled Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  skills Skill[]
+
+  @@map("skill_categories")
+}
+
+model Skill {
+  id         String        @id @default(cuid())
+  name       String
+  iconUrl    String?
+  level      Int?
+  order      Int           @default(0)
+  isEnabled  Boolean       @default(true)
+  categoryId String
+  category   SkillCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@map("skills")
+}
+
+model Project {
+  id                    String   @id @default(cuid())
+  name                  String
+  slug                  String   @unique
+  shortDescription      String   @db.Text
+  fullDescription       String?  @db.Text
+  purpose               String?  @db.Text
+  targetUsers           String?  @db.Text
+  uniqueCapabilities    String?  @db.Text
+  techStack             String[]
+  liveLink              String?
+  githubLink            String?
+  clientGithubLink      String?
+  backendGithubLink     String?
+  demoCredentials       String?  @db.Text
+  authenticationDetails String?  @db.Text
+  architectureDiagram   String?
+  problem               String?  @db.Text
+  solution              String?  @db.Text
+  results               String?  @db.Text
+  isFeatured            Boolean  @default(false)
+  isEnabled             Boolean  @default(true)
+  order                 Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  images       ProjectImage[]
+  features     ProjectFeature[]
+  challenges   ProjectChallenge[]
+  improvements ProjectImprovement[]
+  diagrams     SystemDesignDiagram[]
+
+  @@map("projects")
+}
+
+model SystemDesignDiagram {
+  id            String   @id @default(cuid())
+  projectId     String
+  title         String
+  jsonStructure Json
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("system_design_diagrams")
+}
+
+model ProjectImage {
+  id        String   @id @default(cuid())
+  url       String
+  altText   String?
+  fileType  FileType @default(IMAGE)
+  order     Int      @default(0)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("project_images")
+}
+
+model ProjectFeature {
+  id        String   @id @default(cuid())
+  title     String?
+  text      String   @db.Text
+  type      String? // general, backend, frontend, database
+  order     Int      @default(0)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("project_features")
+}
+
+model ProjectChallenge {
+  id        String   @id @default(cuid())
+  challenge String   @db.Text
+  solution  String?  @db.Text
+  order     Int      @default(0)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("project_challenges")
+}
+
+model ProjectImprovement {
+  id          String   @id @default(cuid())
+  improvement String   @db.Text
+  order       Int      @default(0)
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("project_improvements")
+}
+
+model Education {
+  id          String   @id @default(cuid())
+  institution String
+  degree      String
+  duration    String
+  location    String?
+  description String?  @db.Text
+  order       Int      @default(0)
+  isEnabled   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("educations")
+}
+
+model Certification {
+  id                  String   @id @default(cuid())
+  name                String
+  issuingOrganization String
+  issueDate           String?
+  credentialId        String?
+  credentialLink      String?
+  certificateFileUrl  String?
+  order               Int      @default(0)
+  isEnabled           Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("certifications")
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  icon        String?
+  order       Int      @default(0)
+  isEnabled   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("services")
+}
+
+model ContactInfo {
+  id        String   @id @default(cuid())
+  email     String
+  phone     String?
+  whatsapp  String?
+  location  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_info")
+}
+
+model ContactMessage {
+  id        String                 @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String                 @db.Text
+  status    ContactMessageStatus   @default(NEW)
+  category  ContactMessageCategory @default(GENERAL)
+  priority  ContactMessagePriority @default(LOW)
+  aiSummary String?                @db.Text
+  company   String?
+  source    String?
+  notes     String?                @db.Text
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  @@map("contact_messages")
+}
+
+model Resume {
+  id          String           @id @default(cuid())
+  title       String
+  targetRole  ResumeTargetRole
+  isActive    Boolean          @default(false)
+  name        String
+  designation String
+  email       String
+  phone       String?
+  location    String?
+  linkedin    String?
+  github      String?
+  portfolio   String?
+  summary     String           @db.Text
+  language    String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  sections ResumeSection[]
+  projects ResumeProject[]
+  skills   ResumeSkill[]
+
+  @@map("resumes")
+}
+
+model ResumeSection {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  order     Int      @default(0)
+  isEnabled Boolean  @default(true)
+  resumeId  String
+  resume    Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("resume_sections")
+}
+
+model ResumeProject {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @db.Text
+  techStack   String[]
+  liveLink    String?
+  githubLink  String?
+  order       Int      @default(0)
+  resumeId    String
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("resume_projects")
+}
+
+model ResumeSkill {
+  id        String   @id @default(cuid())
+  category  String
+  skills    String[]
+  order     Int      @default(0)
+  resumeId  String
+  resume    Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("resume_skills")
+}
+
+model SiteSetting {
+  id                   String   @id @default(cuid())
+  siteTitle            String
+  seoTitle             String?
+  seoDescription       String?  @db.Text
+  seoKeywords          String[]
+  accentColor          String   @default("#599692")
+  backgroundColor      String   @default("#11172a")
+  normalTextColor      String   @default("#626c7d")
+  highlightedTextColor String   @default("#dfe5ec")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model FooterLink {
+  id        String   @id @default(cuid())
+  label     String
+  href      String
+  order     Int      @default(0)
+  isEnabled Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("footer_links")
+}
+
+model Achievement {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @db.Text
+  date         String?
+  organization String?
+  order        Int      @default(0)
+  isEnabled    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("achievements")
+}
+
+model Blog {
+  id               String    @id @default(cuid())
+  title            String
+  slug             String    @unique
+  content          String    @db.Text
+  shortDescription String    @db.Text
+  coverImage       String?
+  readingTime      Int?      @default(0)
+  isPublished      Boolean   @default(false)
+  publishedAt      DateTime?
+  seoTitle         String?
+  seoDescription   String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  tags     BlogTag[]
+  comments BlogComment[]
+
+  @@map("blogs")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  blogs BlogTag[]
+
+  @@map("tags")
+}
+
+model BlogTag {
+  blogId String
+  tagId  String
+  blog   Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([blogId, tagId])
+  @@map("blog_tags")
+}
+
+model AIConversation {
+  id        String   @id @default(cuid())
+  sessionId String
+  query     String   @db.Text
+  response  String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("ai_conversations")
+}
+
+model VectorDocument {
+  id        String                      @id @default(cuid())
+  content   String                      @db.Text
+  metadata  Json
+  embedding Unsupported("vector(1536)")
+  createdAt DateTime                    @default(now())
+
+  @@map("vector_documents")
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  eventType String // PAGE_VIEW, PROJECT_VIEW, BLOG_VIEW, RESUME_DOWNLOAD, CONTACT_SUBMISSION
+  page      String?
+  visitorId String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@map("analytics_events")
+}
+
+model CompetitiveStats {
+  id             String   @id @default(cuid())
+  platform       String // CODEFORCES, LEETCODE
+  handle         String
+  rating         Int?
+  rank           String?
+  problemsSolved Int      @default(0)
+  easySolved     Int?
+  mediumSolved   Int?
+  hardSolved     Int?
+  updatedAt      DateTime @updatedAt
+
+  @@map("competitive_stats")
+}
+
+model PersonalBranding {
+  id                    String   @id @default(cuid())
+  tagline               String?  @db.Text
+  developerPhilosophy   String?  @db.Text
+  careerGoals           String?  @db.Text
+  currentFocus          String?  @db.Text
+  engineeringPrinciples String[]
+  updatedAt             DateTime @updatedAt
+
+  @@map("personal_branding")
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  status    String   @default("SUBSCRIBED") // SUBSCRIBED, UNSUBSCRIBED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("newsletter_subscribers")
+}
+
+model BlogComment {
+  id         String        @id @default(cuid())
+  blogId     String
+  name       String
+  email      String
+  content    String        @db.Text
+  isApproved Boolean       @default(false)
+  parentId   String?
+  parent     BlogComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies    BlogComment[] @relation("CommentReplies")
+  blog       Blog          @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@map("blog_comments")
+}
+
+model Reaction {
+  id         String   @id @default(cuid())
+  entityType String // BLOG, PROJECT
+  entityId   String
+  type       String // LIKE, BOOKMARK
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@map("reactions")
+}
+
+model KnowledgeBase {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  type      String // ARCHITECTURE, RESEARCH, NOTES
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("knowledge_base")
+}
+
+model OpenSourceContribution {
+  id          String   @id @default(cuid())
+  repository  String
+  description String   @db.Text
+  prLink      String?
+  issueLink   String?
+  stars       Int      @default(0)
+  isFeatured  Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("open_source_contributions")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  user      String?
+  action    String
+  target    String?
+  ipAddress String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  name      String
+  key       String   @unique
+  scopes    String[]
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("api_keys")
+}
+
+model VisitorSession {
+  id           String   @id @default(cuid())
+  visitorId    String   @unique
+  visitorType  String? // RECRUITER, DEVELOPER, CLIENT
+  behaviorData Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("visitor_sessions")
+}
+
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?  @db.Text
+  isEnabled   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("feature_flags")
+}
+
+model ABTest {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  variants  Json
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ab_tests")
+}
+
+model ScheduledContent {
+  id           String   @id @default(cuid())
+  contentType  String // BLOG, LINKEDIN, TWITTER, NEWSLETTER
+  content      String   @db.Text
+  scheduledFor DateTime
+  status       String   @default("PENDING") // PENDING, PUBLISHED, CANCELLED
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("scheduled_content")
+}
+
+model AIMemory {
+  id          String   @id @default(cuid())
+  entityId    String // Visitor ID or Admin ID
+  type        String // SHORT_TERM, LONG_TERM
+  preferences Json?
+  context     String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("ai_memories")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  message   String   @db.Text
+  type      String // ALERT, REPORT, MILESTONE, CONTACT
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model AIUsageMetric {
+  id            String   @id @default(cuid())
+  endpoint      String
+  modelName     String
+  tokensUsed    Int
+  estimatedCost Float
+  createdAt     DateTime @default(now())
+
+  @@map("ai_usage_metrics")
+}
+
+model WeeklyIntelligenceReport {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  status    String   @default("UNREAD") // UNREAD, READ, APPLIED
+  createdAt DateTime @default(now())
+
+  @@map("weekly_intelligence_reports")
+}
+
+model JobAnalysisHistory {
+  id              String   @id @default(cuid())
+  jobDescription  String   @db.Text
+  matchPercentage Int
+  missingSkills   String[]
+  createdAt       DateTime @default(now())
+
+  @@map("job_analysis_history")
+}
+
+model Opportunity {
+  id           String    @id @default(cuid())
+  company      String
+  role         String
+  status       String    @default("NEW") // NEW, IN_PROGRESS, CLOSED
+  priority     String    @default("MEDIUM") // HIGH, MEDIUM, LOW
+  followUpDate DateTime?
+  aiScore      Int?
+  notes        String?   @db.Text
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("opportunities")
+}
+
+model ContentCalendar {
+  id         String   @id @default(cuid())
+  month      Int
+  year       Int
+  content    String   @db.Text
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("content_calendars")
+}
+
+model MarketTrend {
+  id         String   @id @default(cuid())
+  technology String
+  category   String
+  trendScore Int
+  createdAt  DateTime @default(now())
+
+  @@map("market_trends")
+}
+
+model BrandHealthScore {
+  id                 String   @id @default(cuid())
+  month              Int
+  year               Int
+  technicalAuthority Int
+  contentQuality     Int
+  projectStrength    Int
+  aiPresence         Int
+  overallScore       Int
+  createdAt          DateTime @default(now())
+
+  @@map("brand_health_scores")
+}
+
+model LearningRoadmap {
+  id        String   @id @default(cuid())
+  timeframe String // 30_DAYS, 90_DAYS, 180_DAYS
+  title     String
+  tasks     String[]
+  status    String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED
+  createdAt DateTime @default(now())
+
+  @@map("learning_roadmaps")
+}
+
+model ProjectBlueprint {
+  id             String   @id @default(cuid())
+  idea           String   @db.Text
+  scope          String   @db.Text
+  architecture   String   @db.Text
+  databaseDesign String   @db.Text
+  apiDesign      String   @db.Text
+  techStack      String[]
+  roadmap        String[]
+  createdAt      DateTime @default(now())
+
+  @@map("project_blueprints")
+}
+
+model NetworkContact {
+  id           String    @id @default(cuid())
+  name         String
+  type         String // RECRUITER, DEVELOPER, CLIENT, COLLABORATOR
+  history      Json?
+  notes        String?   @db.Text
+  followUpDate DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("network_contacts")
+}
+
+model SimulationRecord {
+  id        String   @id @default(cuid())
+  type      String // INTERVIEW, SYSTEM_DESIGN, CODE_REVIEW, ARCHITECTURE
+  context   String   @db.Text
+  feedback  String   @db.Text
+  score     Int?
+  createdAt DateTime @default(now())
+
+  @@map("simulation_records")
+}
+
+model PredictiveAnalytics {
+  id              String   @id @default(cuid())
+  metric          String // CONTENT_GROWTH, VISITOR_BEHAVIOR, CAREER_OPPORTUNITY
+  prediction      String   @db.Text
+  confidenceScore Int
+  insights        String[]
+  createdAt       DateTime @default(now())
+
+  @@map("predictive_analytics")
+}

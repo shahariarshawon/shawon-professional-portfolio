@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: shawon-portfolio-backend
+    env: node
+    buildCommand: pnpm install && pnpm run build
+    startCommand: pnpm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CLIENT_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: EMAIL_TO
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        sync: false

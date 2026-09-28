@@ -64,7 +64,15 @@ export function Footer({ footer }: TFooterProps) {
         <div className="mt-10 flex flex-col gap-4 border-t border-site pt-6 text-sm text-normal md:flex-row md:items-center md:justify-between">
           <p>
             {footer?.copyright ||
-              "© 2026 AL Shahariar Arafat Shawon. All rights reserved."}
+              "© 2026 AL Shahariar Arafat Shawon. All rights reserved."}{" "}
+            •{" "}
+            <a
+              href="/admin/login"
+              className="transition hover:text-accent"
+              aria-label="Admin Login"
+            >
+              Admin
+            </a>
           </p>
 
           <a

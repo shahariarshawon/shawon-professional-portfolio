@@ -50,10 +50,8 @@ const uploadBufferToCloudinary = async (
       {
         folder: uploadFolder,
         resource_type: resourceType,
-        type: "upload",
         use_filename: true,
-        unique_filename: true,
-        access_mode: "public"
+        unique_filename: true
       },
       (error, result) => {
         if (error) {
@@ -112,13 +110,7 @@ const uploadSingleFile = async (
   file: Express.Multer.File,
   folder: TUploadFolder = "others"
 ) => {
-  // PDFs and document files must use "raw" so Cloudinary serves them with the
-  // correct content-type and a URL path of /raw/upload/ — using "auto" can
-  // misclassify PDFs as images and return a /image/upload/ URL that fails with
-  // a 401 "deny or ACL failure" when accessed in a browser.
-  const isPdf = file.mimetype === "application/pdf";
-  const resourceType: "raw" | "auto" = isPdf ? "raw" : "auto";
-  return uploadBufferToCloudinary(file, folder, resourceType);
+  return uploadBufferToCloudinary(file, folder, "auto");
 };
 
 export const UploadService = {

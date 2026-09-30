@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import { IntroGate } from "@/components/loader/intro-gate";
-import { AiChatWidget } from "@/components/public/ai-chat/ai-chat-widget";
 import { AboutSection } from "@/components/public/about/about-section";
 import { ContactSection } from "@/components/public/contact/contact-section";
 import { EducationCertificationsSection } from "@/components/public/education/education-certifications-section";
@@ -47,8 +46,6 @@ export default async function HomePage() {
       </main>
 
       {portfolio?.footer ? <Footer footer={portfolio.footer} /> : null}
-
-      <AiChatWidget />
     </div>
   );
 }

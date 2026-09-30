@@ -182,7 +182,7 @@ export function DashboardOverview() {
 
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold border ${
-                        message.status === "NEW"
+                        message.status === "NEW" || message.status === "UNREAD"
                           ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
                           : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                       }`}

@@ -44,7 +44,7 @@ export type THeroUpdatePayload = {
   }[];
 };
 
-export type TMessageStatusFilter = "ALL" | "NEW" | "CONTACTED" | "REPLIED" | "ARCHIVED";
+export type TMessageStatusFilter = "ALL" | "NEW" | "CONTACTED" | "REPLIED" | "ARCHIVED" | "READ" | "UNREAD";
 
 /* ---------------- Dashboard & Activity ---------------- */
 

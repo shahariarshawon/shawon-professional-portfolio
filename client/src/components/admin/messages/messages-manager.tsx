@@ -76,7 +76,7 @@ export function MessagesManager() {
 
       <Card className="p-5">
         <div className="flex flex-wrap gap-3">
-          {(["ALL", "NEW", "CONTACTED", "REPLIED", "ARCHIVED"] as TMessageStatusFilter[]).map(
+          {(["ALL", "UNREAD", "READ"] as TMessageStatusFilter[]).map(
             (status) => (
               <button
                 key={status}
@@ -146,13 +146,9 @@ export function MessagesManager() {
                   <span
                     className={cn(
                       "rounded-full px-3 py-1 text-xs font-semibold",
-                      message.status === "NEW"
-                        ? "bg-amber-500/10 text-amber-400"
-                        : message.status === "CONTACTED"
-                          ? "bg-blue-500/10 text-blue-400"
-                          : message.status === "REPLIED"
-                            ? "bg-emerald-500/10 text-emerald-400"
-                            : "bg-white/5 text-normal"
+                      message.status === "UNREAD"
+                        ? "bg-(--color-accent)/10 text-accent"
+                        : "bg-white/5 text-normal"
                     )}
                   >
                     {message.status}
@@ -183,7 +179,7 @@ export function MessagesManager() {
               </div>
 
               <div className="flex shrink-0 flex-wrap gap-3">
-                {message.status === "NEW" ? (
+                {message.status === "UNREAD" ? (
                   <Button
                     type="button"
                     variant="outline"

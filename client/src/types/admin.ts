@@ -33,8 +33,11 @@ export type TContactMessage = {
   email: string;
   subject?: string | null;
   message: string;
-  status: "NEW" | "CONTACTED" | "REPLIED" | "ARCHIVED" | "READ" | "UNREAD";
+  status: "NEW" | "CONTACTED" | "REPLIED" | "ARCHIVED";
   category?: string;
+  priority?: string;
+  aiSummary?: string | null;
+  company?: string | null;
   createdAt: string;
 };
 

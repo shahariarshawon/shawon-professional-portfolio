@@ -1,36 +1,29 @@
 import * as React from "react";
-import { ExternalLink } from "lucide-react";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
+
+import { getSocialIcon } from "@/lib/social-icons";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 interface SocialLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   platform: string;
+  size?: "sm" | "md";
 }
 
-const getSocialIcon = (platform: string) => {
-  const normalized = platform.toLowerCase();
-  if (normalized.includes("github")) return <FaGithub size={18} />;
-  if (normalized.includes("linkedin")) return <FaLinkedin size={18} />;
-  return <ExternalLink size={18} />;
-};
-
 const SocialLink = React.forwardRef<HTMLAnchorElement, SocialLinkProps>(
-  ({ className, platform, ...props }, ref) => {
+  ({ className, platform, size = "md", ...props }, ref) => {
     return (
-      <motion.a
+      <a
         ref={ref}
-        whileHover={{ scale: 1.1, y: -2 }}
-        whileTap={{ scale: 0.95 }}
         aria-label={platform}
+        title={platform}
         className={cn(
-          "inline-flex h-11 w-11 items-center justify-center rounded-full border border-site bg-card text-highlight transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] shadow-sm",
+          "glass inline-flex items-center justify-center rounded-full text-fg transition-[color,border-color,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:border-[var(--color-accent-bright)]/50 hover:text-brand-bright",
+          size === "md" ? "h-11 w-11" : "h-10 w-10",
           className
         )}
-        {...(props as any)}
+        {...props}
       >
-        {getSocialIcon(platform)}
-      </motion.a>
+        {getSocialIcon(platform, size === "md" ? 18 : 16)}
+      </a>
     );
   }
 );

@@ -7,6 +7,15 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
   email: "shahariarshawon.dev@gmail.com",
+  /** Short line under the brand mark in the intro loader. */
+  brandTagline: "Systems · Backend · AI",
+  /** Rotating positioning statements in the hero. */
+  heroRoles: [
+    "Full Stack Developer",
+    "Backend Engineer",
+    "AI System Builder",
+    "Cloud Architecture Specialist"
+  ],
   author: "AL Shahariar Arafat Shawon",
   locale: "en_US",
   keywords: [

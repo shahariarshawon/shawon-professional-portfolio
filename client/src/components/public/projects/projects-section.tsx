@@ -1,14 +1,15 @@
-"use client";
-
 import { ArrowUpRight, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { FaGithub } from "react-icons/fa";
 
+import { ImageReveal } from "@/components/motion/image-reveal";
+import { RevealGroup, RevealItem } from "@/components/motion/reveal";
+import { Tilt } from "@/components/motion/tilt";
+import { ProjectCover } from "@/components/public/projects/project-cover";
 import { SectionHeading } from "@/components/shared/section-heading";
-import { buttonVariants } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Section } from "@/components/ui/section";
 import { cn } from "@/lib/utils";
 import { TProject } from "@/types/portfolio";
 
@@ -18,21 +19,8 @@ type TProjectsSectionProps = {
 
 const IMPORTANT_PROJECTS = ["dokanos", "suresale"];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
-
 export function ProjectsSection({ projects }: TProjectsSectionProps) {
-  // Sort projects so DokanOS and SureSale appear first
+  // Keep DokanOS and SureSale pinned first (existing behaviour).
   const sortedProjects = [...projects].sort((a, b) => {
     const aIsImportant = IMPORTANT_PROJECTS.includes(a.name.toLowerCase());
     const bIsImportant = IMPORTANT_PROJECTS.includes(b.name.toLowerCase());
@@ -42,134 +30,152 @@ export function ProjectsSection({ projects }: TProjectsSectionProps) {
   });
 
   return (
-    <section id="projects" className="section-padding border-t border-site bg-site/50">
-      <div className="container-custom">
+    <Section id="projects" tone="surface">
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
         <SectionHeading
-          eyebrow="Featured Work"
-          title="Production-Grade Backend Systems."
-          description="Highlighting scalable APIs, secure authentication, database architecture, and complete application flows."
+          index="04"
+          eyebrow="Selected work"
+          title="Production-grade systems,"
+          highlight="end to end."
+          description="Scalable APIs, secure authentication, thoughtful data models and complete product flows — each with a full case study."
         />
-
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="mt-16 grid gap-8 md:grid-cols-2 xl:grid-cols-3"
-        >
-          {sortedProjects.map((project) => {
-            const image = project.images?.[0];
-            const isHighlighted = IMPORTANT_PROJECTS.includes(project.name.toLowerCase());
-
-            return (
-              <motion.div key={project.id} variants={cardVariants} className="group h-full">
-                <Card className={cn(
-                  "flex h-full flex-col overflow-hidden transition-all duration-300",
-                  "hover:shadow-2xl hover:shadow-[var(--color-accent)]/10 hover:-translate-y-2 border-site bg-card",
-                  isHighlighted ? "border-[var(--color-accent)]/50 ring-1 ring-[var(--color-accent)]/20" : ""
-                )}>
-                  {/* Image Section */}
-                  <div className="relative aspect-video overflow-hidden border-b border-site bg-[var(--color-accent)]/5">
-                    {image?.url ? (
-                      <img
-                        src={image.url}
-                        alt={image.altText || project.name}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center p-6 text-center">
-                        <p className="font-semibold text-highlight opacity-50">
-                          {project.name}
-                        </p>
-                      </div>
-                    )}
-                    
-                    {/* Overlay Badges */}
-                    <div className="absolute top-4 left-4 flex flex-col gap-2">
-                      {isHighlighted && (
-                        <Badge variant="accent" className="shadow-sm backdrop-blur-md">
-                          Top Project
-                        </Badge>
-                      )}
-                      {project.isFeatured && !isHighlighted && (
-                        <Badge variant="default" className="shadow-sm backdrop-blur-md">
-                          Featured
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Content Section */}
-                  <div className="flex flex-1 flex-col p-6 lg:p-8">
-                    <h3 className="text-2xl font-bold tracking-tight text-highlight transition-colors group-hover:text-[var(--color-accent)]">
-                      {project.name}
-                    </h3>
-                    
-                    <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-normal flex-1">
-                      {project.shortDescription}
-                    </p>
-
-                    {/* Tech Stack */}
-                    <div className="mt-6 flex flex-wrap gap-2">
-                      {project.techStack.slice(0, 4).map((tech) => (
-                        <span
-                          key={tech}
-                          className="rounded-md bg-site px-2.5 py-1 text-xs font-medium text-normal border border-site transition-colors group-hover:border-[var(--color-accent)]/30"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                      {project.techStack.length > 4 && (
-                        <span className="rounded-md bg-site px-2.5 py-1 text-xs font-medium text-normal border border-site">
-                          +{project.techStack.length - 4}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="mt-8 flex items-center justify-between border-t border-site pt-6">
-                      <Link
-                        href={`/projects/${project.slug}`}
-                        className="inline-flex items-center text-sm font-semibold text-[var(--color-accent)] transition-colors hover:text-highlight"
-                      >
-                        Read Case Study
-                        <ArrowUpRight className="ml-1" size={16} />
-                      </Link>
-
-                      <div className="flex gap-3">
-                        {project.githubLink && (
-                          <a
-                            href={project.githubLink}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label="View Source on GitHub"
-                            className="text-normal transition-colors hover:text-highlight"
-                          >
-                            <FaGithub size={20} />
-                          </a>
-                        )}
-                        {project.liveLink && (
-                          <a
-                            href={project.liveLink}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label="View Live Project"
-                            className="text-normal transition-colors hover:text-[var(--color-accent)]"
-                          >
-                            <ExternalLink size={20} />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+        {sortedProjects.length ? (
+          <p className="font-mono text-xs text-muted lg:pb-2">
+            {String(sortedProjects.length).padStart(2, "0")} projects
+          </p>
+        ) : null}
       </div>
-    </section>
+
+      {sortedProjects.length ? (
+        <RevealGroup className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:mt-16 lg:gap-8" stagger={0.1}>
+          {sortedProjects.map((project, index) => (
+            <RevealItem key={project.id} className={cn("h-full min-w-0", index === 0 && "md:col-span-2")}>
+              <ProjectCard
+                project={project}
+                index={index}
+                total={sortedProjects.length}
+                featured={index === 0}
+                highlighted={IMPORTANT_PROJECTS.includes(project.name.toLowerCase())}
+              />
+            </RevealItem>
+          ))}
+        </RevealGroup>
+      ) : (
+        <Card variant="glass" className="mt-14 p-10 text-center">
+          <p className="text-fg">New case studies are being written — check back soon.</p>
+        </Card>
+      )}
+    </Section>
+  );
+}
+
+type TProjectCardProps = {
+  project: TProject;
+  index: number;
+  total: number;
+  featured: boolean;
+  highlighted: boolean;
+};
+
+function ProjectCard({ project, index, total, featured, highlighted }: TProjectCardProps) {
+  const image = project.images?.[0];
+  const caseStudyHref = `/projects/${project.slug}`;
+
+  return (
+    <Tilt max={featured ? 2.5 : 4} className="h-full rounded-[1.75rem]">
+      <article
+        className={cn(
+          "group glass relative flex h-full flex-col overflow-hidden rounded-[1.75rem] shadow-soft transition-[border-color,box-shadow] duration-500 ease-out-expo hover:border-line-strong hover:shadow-lift",
+          featured && "lg:grid lg:grid-cols-[1.15fr_1fr]",
+          highlighted && "border-gradient"
+        )}
+      >
+        {/* Cover */}
+        <div
+          className={cn(
+            "relative aspect-[16/10] overflow-hidden border-b border-line",
+            featured && "lg:aspect-auto lg:min-h-[440px] lg:border-b-0 lg:border-r"
+          )}
+        >
+          {image?.url ? (
+            <div className="h-full w-full transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]">
+              <ImageReveal src={image.url} alt={image.altText || project.name} className="h-full w-full" />
+            </div>
+          ) : (
+            <ProjectCover name={project.name} techStack={project.techStack} seed={index} />
+          )}
+
+          <div className="absolute left-4 top-4 flex gap-2">
+            {highlighted ? (
+              <Badge variant="glass">Top project</Badge>
+            ) : project.isFeatured ? (
+              <Badge variant="glass">Featured</Badge>
+            ) : null}
+          </div>
+          <span className="glass absolute right-4 top-4 rounded-full px-2.5 py-1 font-mono text-[11px] text-muted">
+            {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+          </span>
+        </div>
+
+        {/* Content */}
+        <div className={cn("flex flex-1 flex-col p-6 sm:p-8", featured && "lg:justify-center lg:p-10")}>
+          {project.techStack.length ? (
+            <ul className="flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-wider text-muted">
+              {project.techStack.slice(0, featured ? 6 : 4).map((tech) => (
+                <li key={tech}>{tech}</li>
+              ))}
+              {project.techStack.length > (featured ? 6 : 4) ? (
+                <li>+{project.techStack.length - (featured ? 6 : 4)}</li>
+              ) : null}
+            </ul>
+          ) : null}
+
+          <h3 className={cn("mt-4 text-fg", featured ? "text-h2" : "text-h3")}>
+            {/* Stretched link: the whole card opens the case study. */}
+            <Link href={caseStudyHref} className="after:absolute after:inset-0 after:z-0">
+              {project.name}
+            </Link>
+          </h3>
+
+          <p className={cn("mt-4 flex-1 text-sm leading-7 text-muted", featured ? "lg:text-base lg:leading-8" : "line-clamp-3")}>
+            {project.shortDescription}
+          </p>
+
+          <div className="mt-8 flex items-center justify-between border-t border-line pt-6">
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-fg">
+              Read case study
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-line transition-[background-color,border-color,color,transform] duration-500 ease-out-expo group-hover:rotate-45 group-hover:border-transparent group-hover:bg-gradient-brand group-hover:text-on-brand">
+                <ArrowUpRight size={15} />
+              </span>
+            </span>
+
+            <div className="relative z-10 flex gap-2">
+              {project.githubLink ? (
+                <a
+                  href={project.githubLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`${project.name} source on GitHub`}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-glass hover:text-fg"
+                >
+                  <FaGithub size={18} />
+                </a>
+              ) : null}
+              {project.liveLink ? (
+                <a
+                  href={project.liveLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`${project.name} live site`}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-glass hover:text-brand-bright"
+                >
+                  <ExternalLink size={17} />
+                </a>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </article>
+    </Tilt>
   );
 }

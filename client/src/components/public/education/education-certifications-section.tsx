@@ -1,10 +1,15 @@
 "use client";
 
-import { Award, GraduationCap } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowUpRight, Award, GraduationCap } from "lucide-react";
 import { useState } from "react";
 
+import { Reveal } from "@/components/motion/reveal";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Card } from "@/components/ui/card";
+import { IconTile } from "@/components/ui/icon-tile";
+import { Section } from "@/components/ui/section";
+import { ease } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { TCertification, TEducation } from "@/types/portfolio";
 
@@ -13,124 +18,180 @@ type TEducationCertificationsSectionProps = {
   certifications: TCertification[];
 };
 
+type TTab = "education" | "certifications";
+
+const panel = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: ease.out } },
+  exit: { opacity: 0, y: -12, transition: { duration: 0.25 } }
+};
+
 export function EducationCertificationsSection({
   education,
   certifications
 }: TEducationCertificationsSectionProps) {
-  const [activeTab, setActiveTab] = useState<"education" | "certifications">(
-    "education"
-  );
+  const [activeTab, setActiveTab] = useState<TTab>("education");
+
+  const tabs: { id: TTab; label: string; count: number }[] = [
+    { id: "education", label: "Education", count: education.length },
+    { id: "certifications", label: "Certifications", count: certifications.length }
+  ];
 
   return (
-    <section id="education" className="section-padding border-t border-site">
-      <div className="container-custom">
+    <Section id="education">
+      <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
         <SectionHeading
+          index="05"
           eyebrow="Education"
-          title="Academic background and certifications."
-          description="A concise overview of formal education and professional learning achievements."
+          title="Foundations &"
+          highlight="credentials."
+          description="Formal education and professional learning that shaped how I build."
         />
 
-        <div className="mt-10 flex w-fit rounded-full border border-site bg-card p-1">
-          <button
-            type="button"
-            onClick={() => setActiveTab("education")}
-            className={cn(
-              "rounded-full px-5 py-2 text-sm font-medium transition",
-              activeTab === "education"
-                ? "bg-(--color-accent) text-white"
-                : "text-normal hover:text-highlight"
-            )}
-          >
-            Education
-          </button>
+        <Reveal y={12}>
+          <div role="tablist" aria-label="Education and certifications" className="glass inline-flex rounded-full p-1">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
 
-          <button
-            type="button"
-            onClick={() => setActiveTab("certifications")}
-            className={cn(
-              "rounded-full px-5 py-2 text-sm font-medium transition",
-              activeTab === "certifications"
-                ? "bg-(--color-accent) text-white"
-                : "text-normal hover:text-highlight"
-            )}
-          >
-            Certifications
-          </button>
-        </div>
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  id={`tab-${tab.id}`}
+                  aria-selected={isActive}
+                  aria-controls={`panel-${tab.id}`}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "relative rounded-full px-5 py-2.5 text-sm font-medium transition-colors duration-300",
+                    isActive ? "text-on-brand" : "text-muted hover:text-fg"
+                  )}
+                >
+                  {isActive ? (
+                    <motion.span
+                      layoutId="education-tab"
+                      className="bg-gradient-brand absolute inset-0 rounded-full"
+                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                    />
+                  ) : null}
+                  <span className="relative">
+                    {tab.label}
+                    <span className="ml-2 font-mono text-[11px] opacity-70">{tab.count}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </Reveal>
+      </div>
 
-        <div className="mt-8 grid gap-6">
-          {activeTab === "education"
-            ? education.map((item) => (
-                <Card key={item.id} className="p-6 md:p-8">
-                  <div className="flex gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-(--color-accent)/10 text-accent">
-                      <GraduationCap size={26} />
-                    </div>
+      <div className="mt-12">
+        <AnimatePresence mode="wait" initial={false}>
+          {activeTab === "education" ? (
+            <motion.div
+              key="education"
+              id="panel-education"
+              role="tabpanel"
+              aria-labelledby="tab-education"
+              {...panel}
+              className="grid gap-5"
+            >
+              {education.length ? (
+                education.map((item) => (
+                  <Card key={item.id} variant="glass" interactive className="p-6 sm:p-8">
+                    <div className="flex flex-col gap-5 sm:flex-row">
+                      <IconTile size="lg">
+                        <GraduationCap size={24} />
+                      </IconTile>
 
-                    <div>
-                      <h3 className="text-2xl font-bold text-highlight">
-                        {item.degree}
-                      </h3>
-                      <p className="mt-2 font-medium text-accent">
-                        {item.institution}
-                      </p>
-                      <p className="mt-2 text-sm text-normal">
-                        {item.duration} • {item.location}
-                      </p>
-                      {item.description ? (
-                        <p className="mt-5 leading-8 text-normal">
-                          {item.description}
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                </Card>
-              ))
-            : certifications.length
-              ? certifications.map((item) => (
-                  <Card key={item.id} className="p-6 md:p-8">
-                    <div className="flex gap-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-(--color-accent)/10 text-accent">
-                        <Award size={26} />
-                      </div>
-
-                      <div>
-                        <h3 className="text-2xl font-bold text-highlight">
-                          {item.name}
-                        </h3>
-                        <p className="mt-2 font-medium text-accent">
-                          {item.issuingOrganization}
-                        </p>
-
-                        {item.issueDate ? (
-                          <p className="mt-2 text-sm text-normal">
-                            Issued: {item.issueDate}
+                      <div className="flex-1">
+                        <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <h3 className="text-h3 text-fg">{item.degree}</h3>
+                            <p className="mt-1 font-medium text-brand">{item.institution}</p>
+                          </div>
+                          <p className="font-mono text-xs text-muted md:pt-2">
+                            {item.duration}
+                            {item.location ? ` · ${item.location}` : ""}
                           </p>
-                        ) : null}
-
-                        {item.credentialLink ? (
-                          <a
-                            href={item.credentialLink}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-4 inline-block text-sm font-semibold text-accent"
-                          >
-                            View Credential
-                          </a>
+                        </div>
+                        {item.description ? (
+                          <p className="mt-5 max-w-3xl leading-8 text-muted">{item.description}</p>
                         ) : null}
                       </div>
                     </div>
                   </Card>
                 ))
-              : (
-                <Card className="p-8 text-center">
-                  <p className="text-highlight">
-                    No certifications added yet.
-                  </p>
-                </Card>
+              ) : (
+                <EmptyPanel text="Education details coming soon." />
               )}
-        </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="certifications"
+              id="panel-certifications"
+              role="tabpanel"
+              aria-labelledby="tab-certifications"
+              {...panel}
+              className="grid gap-5 md:grid-cols-2"
+            >
+              {certifications.length ? (
+                certifications.map((item) => {
+                  const link = item.credentialLink || item.credentialUrl;
+
+                  return (
+                    <Card key={item.id} variant="glass" interactive className="flex flex-col p-6 sm:p-7">
+                      <div className="flex items-start gap-4">
+                        <IconTile>
+                          <Award size={20} />
+                        </IconTile>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-lg font-semibold leading-snug text-fg">{item.title || item.name}</h3>
+                          <p className="mt-1 text-sm font-medium text-brand">
+                            {item.issuingOrganization || item.issuer}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 flex items-center justify-between border-t border-line pt-5">
+                        <p className="font-mono text-xs text-muted">
+                          {item.issueDate ? `Issued ${item.issueDate}` : "Certified"}
+                        </p>
+                        {link ? (
+                          <a
+                            href={link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-sm font-medium text-fg transition-colors hover:text-brand-bright"
+                          >
+                            View credential
+                            <ArrowUpRight size={15} />
+                          </a>
+                        ) : null}
+                      </div>
+                    </Card>
+                  );
+                })
+              ) : (
+                <div className="md:col-span-2">
+                  <EmptyPanel text="Certifications will be listed here soon." />
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </section>
+    </Section>
+  );
+}
+
+function EmptyPanel({ text }: { text: string }) {
+  return (
+    <Card variant="glass" className="flex flex-col items-center justify-center gap-4 border-dashed p-12 text-center">
+      <IconTile tone="glass">
+        <Award size={20} />
+      </IconTile>
+      <p className="text-sm text-muted">{text}</p>
+    </Card>
   );
 }

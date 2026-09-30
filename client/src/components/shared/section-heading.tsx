@@ -1,8 +1,13 @@
+import { Reveal } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
 
 type TSectionHeadingProps = {
   eyebrow?: string;
+  /** Optional index shown before the eyebrow, e.g. "02". */
+  index?: string;
   title: string;
+  /** Trailing words of the title rendered with the brand gradient. */
+  highlight?: string;
   description?: string;
   align?: "left" | "center";
   className?: string;
@@ -10,7 +15,9 @@ type TSectionHeadingProps = {
 
 export function SectionHeading({
   eyebrow,
+  index,
   title,
+  highlight,
   description,
   align = "left",
   className
@@ -24,19 +31,35 @@ export function SectionHeading({
       )}
     >
       {eyebrow ? (
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-accent">
-          {eyebrow}
-        </p>
+        <Reveal
+          y={12}
+          className={cn(
+            "flex items-center gap-3 text-eyebrow text-brand",
+            align === "center" && "justify-center"
+          )}
+        >
+          {index ? <span className="text-muted">{index}</span> : null}
+          <span aria-hidden="true" className="h-px w-8 bg-current opacity-60" />
+          <span>{eyebrow}</span>
+        </Reveal>
       ) : null}
 
-      <h2 className="mt-3 text-3xl font-bold tracking-tight text-highlight md:text-5xl">
-        {title}
-      </h2>
+      <Reveal delay={0.05}>
+        <h2 className="mt-5 text-h2 text-balance text-fg">
+          {title}
+          {highlight ? (
+            <>
+              {" "}
+              <span className="text-gradient">{highlight}</span>
+            </>
+          ) : null}
+        </h2>
+      </Reveal>
 
       {description ? (
-        <p className="mt-5 text-base leading-8 text-normal md:text-lg">
-          {description}
-        </p>
+        <Reveal delay={0.1}>
+          <p className="mt-6 text-lead text-pretty text-muted">{description}</p>
+        </Reveal>
       ) : null}
     </div>
   );

@@ -27,7 +27,7 @@ export function ProjectDetailsView({
     <div className="min-h-screen bg-site">
       <Navbar items={navbar} />
 
-      <main id="main-content">
+      <main id="main-content" className="pt-16">
         <ProjectHero project={project} />
 
         <section className="pb-20">

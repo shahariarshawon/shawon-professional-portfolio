@@ -15,10 +15,7 @@ const ThemeToggleClient = dynamic(
       <button
         type="button"
         aria-label="Toggle theme"
-        className={cn(
-          "h-10 w-10 rounded-full border border-white/10 bg-white/5",
-          "light:border-slate-200 light:bg-white"
-        )}
+        className={cn("glass h-10 w-10 rounded-full")}
       />
     )
   }

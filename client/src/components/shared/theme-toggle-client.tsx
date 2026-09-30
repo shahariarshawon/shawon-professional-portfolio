@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -17,15 +18,25 @@ export function ThemeToggleClient({ className }: TThemeToggleClientProps) {
   return (
     <button
       type="button"
-      aria-label="Toggle theme"
+      aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn(
-        "inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-(--color-highlight) transition hover:border-(--color-accent) hover:text-(--color-accent)",
-        "light:border-slate-200 light:bg-white light:text-slate-700",
+        "glass relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full text-fg transition-colors duration-300 hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]",
         className
       )}
     >
-      {isDark ? <Sun size={18} /> : <Moon size={18} />}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={isDark ? "sun" : "moon"}
+          initial={{ y: 14, opacity: 0, rotate: -45 }}
+          animate={{ y: 0, opacity: 1, rotate: 0 }}
+          exit={{ y: -14, opacity: 0, rotate: 45 }}
+          transition={{ duration: 0.25 }}
+          className="inline-flex"
+        >
+          {isDark ? <Sun size={17} /> : <Moon size={17} />}
+        </motion.span>
+      </AnimatePresence>
     </button>
   );
 }

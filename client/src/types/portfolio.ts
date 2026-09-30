@@ -36,6 +36,8 @@ export type THeroSection = {
   introduction: string;
   photoUrl?: string | null;
   resumeUrl?: string | null;
+  location?: string | null;
+  availabilityStatus?: string | null;
   isGetInTouchEnabled: boolean;
   isViewResumeEnabled: boolean;
   isDownloadResumeEnabled: boolean;

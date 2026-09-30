@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { IntroGate } from "@/components/loader/intro-gate";
 import { AboutSection } from "@/components/public/about/about-section";
 import { ContactSection } from "@/components/public/contact/contact-section";
 import { EducationCertificationsSection } from "@/components/public/education/education-certifications-section";
@@ -10,13 +11,21 @@ import { Navbar } from "@/components/public/navbar/navbar";
 import { ProjectsSection } from "@/components/public/projects/projects-section";
 import { ServicesSection } from "@/components/public/services/services-section";
 import { SkillsSection } from "@/components/public/skills/skills-section";
+import { siteConfig } from "@/constants/site";
 import { getPortfolio } from "@/lib/public-api";
 
 export default async function HomePage() {
-  const portfolio = await getPortfolio();
+  // Render with built-in fallbacks rather than the error page if the API is
+  // cold-starting or unreachable.
+  const portfolio = await getPortfolio().catch(() => null);
 
   return (
-    <div className="min-h-screen bg-site">
+    <div className="min-h-screen overflow-x-clip bg-site">
+      <IntroGate
+        name={portfolio?.hero?.name || siteConfig.name}
+        tagline={siteConfig.brandTagline}
+      />
+
       <Navbar items={portfolio?.navbar || []} />
 
       <main id="main-content">

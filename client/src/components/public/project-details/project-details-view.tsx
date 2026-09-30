@@ -8,6 +8,8 @@ import { ProjectHero } from "@/components/public/project-details/project-hero";
 import { ProjectImprovements } from "@/components/public/project-details/project-improvements";
 import { ProjectOverview } from "@/components/public/project-details/project-overview";
 import { ProjectTechStack } from "@/components/public/project-details/project-tech-stack";
+import { ProjectProblemSolution } from "@/components/public/project-details/project-problem-solution";
+import { ProjectArchitectureResults } from "@/components/public/project-details/project-architecture-results";
 import { TFooter, TNavbarItem, TProject } from "@/types/portfolio";
 
 type TProjectDetailsViewProps = {
@@ -38,6 +40,8 @@ export function ProjectDetailsView({
         </section>
 
         <ProjectOverview project={project} />
+        <ProjectProblemSolution project={project} />
+        <ProjectArchitectureResults project={project} />
         <ProjectTechStack project={project} />
         <ProjectFeatures features={project.features || []} />
         <ProjectChallenges challenges={project.challenges || []} />

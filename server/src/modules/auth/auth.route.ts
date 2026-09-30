@@ -13,6 +13,11 @@ router.post(
 );
 
 router.post(
+  "/refresh",
+  AuthController.refreshToken
+);
+
+router.post(
   "/logout",
   AuthMiddleware.requireAuth(),
   AuthController.logout

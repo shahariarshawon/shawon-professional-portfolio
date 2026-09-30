@@ -62,8 +62,69 @@ model AdminUser {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  loginHistories      LoginHistory[]
+  permissions         AdminPermission[]
+
   @@map("admin_users")
 }
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  adminId   String
+  admin     AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([adminId])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  adminId   String
+  admin     AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([adminId])
+  @@map("password_reset_tokens")
+}
+
+model LoginHistory {
+  id        String    @id @default(cuid())
+  adminId   String
+  admin     AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  ipAddress String?
+  userAgent String?
+  status    String    @default("SUCCESS") // SUCCESS, FAILED
+  reason    String?
+  createdAt DateTime  @default(now())
+
+  @@index([adminId])
+  @@map("login_histories")
+}
+
+model AdminPermission {
+  id        String    @id @default(cuid())
+  adminId   String
+  admin     AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  resource  String    // "ABOUT", "PROJECTS", "EXPERIENCE", "SETTINGS", etc.
+  action    String    // "READ", "WRITE", "DELETE", "ADMIN"
+  createdAt DateTime  @default(now())
+
+  @@unique([adminId, resource, action])
+  @@map("admin_permissions")
+}
+
 
 model NavbarItem {
   id        String   @id @default(cuid())
@@ -278,8 +339,95 @@ model Project {
   improvements ProjectImprovement[]
   diagrams     SystemDesignDiagram[]
 
+  technologies  ProjectTechnology[]
+  resultsList   ProjectResult[]
+  architectures ProjectArchitecture[]
+  caseStudy     ProjectCaseStudy?
+  links         ProjectLink[]
+  views         ProjectView[]
+
+  @@index([isEnabled, order])
+  @@index([isFeatured])
   @@map("projects")
 }
+
+model ProjectTechnology {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name      String
+  category  String?  // Frontend, Backend, Database, DevOps, etc.
+  icon      String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@map("project_technologies")
+}
+
+model ProjectResult {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  metric      String   // e.g. "99.9%", "10x", "50ms"
+  label       String   // e.g. "Uptime", "Throughput increase", "P95 latency"
+  description String?  @db.Text
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([projectId])
+  @@map("project_results")
+}
+
+model ProjectArchitecture {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String   @db.Text
+  diagramUrl  String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([projectId])
+  @@map("project_architectures")
+}
+
+model ProjectCaseStudy {
+  id                  String   @id @default(cuid())
+  projectId           String   @unique
+  project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  overview            String?  @db.Text
+  problemStatement    String?  @db.Text
+  proposedSolution    String?  @db.Text
+  architectureDetails String?  @db.Text
+  challengesFaced     String?  @db.Text
+  outcomes            String?  @db.Text
+  lessonsLearned      String?  @db.Text
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("project_case_studies")
+}
+
+model ProjectLink {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  label     String   // "Live Demo", "GitHub Client", "API Docs", etc.
+  url       String
+  type      String   @default("OTHER") // LIVE, GITHUB, DOCS, OTHER
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@map("project_links")
+}
+
 
 model SystemDesignDiagram {
   id            String   @id @default(cuid())
@@ -364,16 +512,21 @@ model Education {
 model Certification {
   id                  String   @id @default(cuid())
   name                String
+  title               String?
   issuingOrganization String
+  issuer              String?
   issueDate           String?
   credentialId        String?
   credentialLink      String?
+  credentialUrl       String?
   certificateFileUrl  String?
+  imageUrl            String?
   order               Int      @default(0)
   isEnabled           Boolean  @default(true)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
+  @@index([isEnabled, order])
   @@map("certifications")
 }
 
@@ -387,8 +540,25 @@ model Service {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  features ServiceFeature[]
+
+  @@index([isEnabled, order])
   @@map("services")
 }
+
+model ServiceFeature {
+  id        String   @id @default(cuid())
+  text      String
+  order     Int      @default(0)
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([serviceId])
+  @@map("service_features")
+}
+
 
 model ContactInfo {
   id        String   @id @default(cuid())
@@ -730,8 +900,76 @@ model VisitorSession {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  pageViews    PageView[]
+  contactEvents ContactEvent[]
+
   @@map("visitor_sessions")
 }
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  visitorId String?
+  session   VisitorSession? @relation(fields: [visitorId], references: [visitorId], onDelete: SetNull)
+  ipAddress String?
+  userAgent String?
+  referrer  String?
+  duration  Int?     @default(0) // seconds spent on page
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([visitorId])
+  @@index([createdAt])
+  @@map("page_views")
+}
+
+model ProjectView {
+  id        String   @id @default(cuid())
+  projectId String
+  slug      String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  visitorId String?
+  ipAddress String?
+  userAgent String?
+  referrer  String?
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([slug])
+  @@index([createdAt])
+  @@map("project_views")
+}
+
+model ContactEvent {
+  id          String   @id @default(cuid())
+  eventType   String   // FORM_VIEW, INITIATED, SUBMITTED, FAILED
+  visitorId   String?
+  session     VisitorSession? @relation(fields: [visitorId], references: [visitorId], onDelete: SetNull)
+  contactType String?  // EMAIL, WHATSAPP, LINKEDIN, FORM
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("contact_events")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  adminId   String?
+  action    String   // CREATE, UPDATE, DELETE, REORDER, LOGIN, UPLOAD
+  entity    String   // PROJECT, EXPERIENCE, SKILL, ABOUT, SERVICE, EDUCATION, etc.
+  entityId  String?
+  details   String?  @db.Text
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([entity])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
 
 model FeatureFlag {
   id          String   @id @default(cuid())

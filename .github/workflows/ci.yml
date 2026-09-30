@@ -1,13 +1,14 @@
-name: Enterprise CI/CD Pipeline
+name: Enterprise CI Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
 
 jobs:
-  build-and-test:
+  server-ci:
+    name: Backend CI
     runs-on: ubuntu-latest
     
     steps:
@@ -39,5 +40,37 @@ jobs:
     - name: Build (Server)
       run: cd server && pnpm build
 
-    - name: Docker Build Check
+    - name: Docker Build Check (Server)
       run: cd server && docker build -t shawon-backend:test .
+
+  client-ci:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v3
+      with:
+        version: 9
+
+    - name: Use Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install dependencies (Client)
+      run: cd client && pnpm install --frozen-lockfile
+
+    - name: Run Type Check (Client)
+      run: cd client && pnpm type-check
+
+    - name: Build (Client)
+      env:
+        NEXT_PUBLIC_API_URL: https://api.shawon.dev/api/v1
+      run: cd client && pnpm build
+
+    - name: Docker Build Check (Client)
+      run: cd client && docker build -t shawon-frontend:test .

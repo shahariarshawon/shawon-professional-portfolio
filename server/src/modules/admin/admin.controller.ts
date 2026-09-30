@@ -3,6 +3,7 @@ import AppError from "../../errors/AppError";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { AdminService } from "./admin.service";
+import { ActivityService } from "../activity/activity.service";
 
 const getIdFromParams = (req: Request) => {
   const idParam = req.params.id;
@@ -659,8 +660,146 @@ const updateSiteSettings = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const reorderExperiences = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminService.reorderItems(
+    "experience",
+    req.body.items,
+    req.admin?.adminId
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Experiences reordered successfully",
+    data: result
+  });
+});
+
+const reorderSkillCategories = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminService.reorderItems(
+    "skillCategory",
+    req.body.items,
+    req.admin?.adminId
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Skill categories reordered successfully",
+    data: result
+  });
+});
+
+const reorderSkills = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminService.reorderItems(
+    "skill",
+    req.body.items,
+    req.admin?.adminId
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Skills reordered successfully",
+    data: result
+  });
+});
+
+const reorderProjects = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminService.reorderItems(
+    "project",
+    req.body.items,
+    req.admin?.adminId
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Projects reordered successfully",
+    data: result
+  });
+});
+
+const reorderEducation = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminService.reorderItems(
+    "education",
+    req.body.items,
+    req.admin?.adminId
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Education reordered successfully",
+    data: result
+  });
+});
+
+const reorderCertifications = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminService.reorderItems(
+    "certification",
+    req.body.items,
+    req.admin?.adminId
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Certifications reordered successfully",
+    data: result
+  });
+});
+
+const reorderServices = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminService.reorderItems(
+    "service",
+    req.body.items,
+    req.admin?.adminId
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Services reordered successfully",
+    data: result
+  });
+});
+
+const reorderNavbar = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminService.reorderItems(
+    "navbarItem",
+    req.body.items,
+    req.admin?.adminId
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Navbar items reordered successfully",
+    data: result
+  });
+});
+
+const reorderFooterLinks = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminService.reorderItems(
+    "footerLink",
+    req.body.items,
+    req.admin?.adminId
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Footer links reordered successfully",
+    data: result
+  });
+});
+
+const getActivities = catchAsync(async (req: Request, res: Response) => {
+  const limit = Number(req.query.limit) || 20;
+  const result = await ActivityService.getRecentActivities(limit);
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Recent activities fetched successfully",
+    data: result
+  });
+});
+
 export const AdminController = {
   getDashboardOverview,
+  getActivities,
 
   getHero,
   updateHero,
@@ -672,41 +811,49 @@ export const AdminController = {
   createNavbarItem,
   updateNavbarItem,
   deleteNavbarItem,
+  reorderNavbar,
 
   getExperiences,
   createExperience,
   updateExperience,
   deleteExperience,
+  reorderExperiences,
 
   getSkillCategories,
   createSkillCategory,
   updateSkillCategory,
   deleteSkillCategory,
+  reorderSkillCategories,
 
   getSkills,
   createSkill,
   updateSkill,
   deleteSkill,
+  reorderSkills,
 
   getProjects,
   createProject,
   updateProject,
   deleteProject,
+  reorderProjects,
 
   getEducation,
   createEducation,
   updateEducation,
   deleteEducation,
+  reorderEducation,
 
   getCertifications,
   createCertification,
   updateCertification,
   deleteCertification,
+  reorderCertifications,
 
   getServices,
   createService,
   updateService,
   deleteService,
+  reorderServices,
 
   getContactInfo,
   updateContactInfo,
@@ -719,6 +866,7 @@ export const AdminController = {
   createFooterLink,
   updateFooterLink,
   deleteFooterLink,
+  reorderFooterLinks,
 
   getSiteSettings,
   updateSiteSettings

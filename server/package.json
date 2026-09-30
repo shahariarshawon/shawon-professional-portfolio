@@ -9,6 +9,7 @@
     "build": "prisma generate && tsc && prisma migrate deploy",
     "start": "node dist/server.js",
     "type-check": "tsc --noEmit",
+    "test": "jest --passWithNoTests --forceExit",
     "migrate:deploy": "prisma migrate deploy",
     "seed": "prisma db seed"
   },

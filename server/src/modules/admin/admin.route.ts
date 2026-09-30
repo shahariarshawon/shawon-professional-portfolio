@@ -4,13 +4,12 @@ import { AuthMiddleware } from "../auth/auth.middleware";
 import { AdminController } from "./admin.controller";
 import { AdminValidation } from "./admin.validation";
 
-
-
 const router = Router();
 
 router.use(AuthMiddleware.requireAuth());
 
 router.get("/dashboard", AdminController.getDashboardOverview);
+router.get("/activities", AdminController.getActivities);
 
 /* Hero */
 router.get("/hero", AdminController.getHero);
@@ -36,6 +35,11 @@ router.post(
   AdminController.createNavbarItem
 );
 router.patch(
+  "/navbar/reorder",
+  validateRequest(AdminValidation.reorderValidationSchema),
+  AdminController.reorderNavbar
+);
+router.patch(
   "/navbar/:id",
   validateRequest(AdminValidation.bodyWithIdParamValidationSchema),
   AdminController.updateNavbarItem
@@ -52,6 +56,11 @@ router.post(
   "/experience",
   validateRequest(AdminValidation.bodyValidationSchema),
   AdminController.createExperience
+);
+router.patch(
+  "/experience/reorder",
+  validateRequest(AdminValidation.reorderValidationSchema),
+  AdminController.reorderExperiences
 );
 router.patch(
   "/experience/:id",
@@ -72,6 +81,11 @@ router.post(
   AdminController.createSkillCategory
 );
 router.patch(
+  "/skill-categories/reorder",
+  validateRequest(AdminValidation.reorderValidationSchema),
+  AdminController.reorderSkillCategories
+);
+router.patch(
   "/skill-categories/:id",
   validateRequest(AdminValidation.bodyWithIdParamValidationSchema),
   AdminController.updateSkillCategory
@@ -88,6 +102,11 @@ router.post(
   "/skills",
   validateRequest(AdminValidation.bodyValidationSchema),
   AdminController.createSkill
+);
+router.patch(
+  "/skills/reorder",
+  validateRequest(AdminValidation.reorderValidationSchema),
+  AdminController.reorderSkills
 );
 router.patch(
   "/skills/:id",
@@ -108,6 +127,11 @@ router.post(
   AdminController.createProject
 );
 router.patch(
+  "/projects/reorder",
+  validateRequest(AdminValidation.reorderValidationSchema),
+  AdminController.reorderProjects
+);
+router.patch(
   "/projects/:id",
   validateRequest(AdminValidation.bodyWithIdParamValidationSchema),
   AdminController.updateProject
@@ -124,6 +148,11 @@ router.post(
   "/education",
   validateRequest(AdminValidation.bodyValidationSchema),
   AdminController.createEducation
+);
+router.patch(
+  "/education/reorder",
+  validateRequest(AdminValidation.reorderValidationSchema),
+  AdminController.reorderEducation
 );
 router.patch(
   "/education/:id",
@@ -144,6 +173,11 @@ router.post(
   AdminController.createCertification
 );
 router.patch(
+  "/certifications/reorder",
+  validateRequest(AdminValidation.reorderValidationSchema),
+  AdminController.reorderCertifications
+);
+router.patch(
   "/certifications/:id",
   validateRequest(AdminValidation.bodyWithIdParamValidationSchema),
   AdminController.updateCertification
@@ -160,6 +194,11 @@ router.post(
   "/services",
   validateRequest(AdminValidation.bodyValidationSchema),
   AdminController.createService
+);
+router.patch(
+  "/services/reorder",
+  validateRequest(AdminValidation.reorderValidationSchema),
+  AdminController.reorderServices
 );
 router.patch(
   "/services/:id",
@@ -193,13 +232,17 @@ router.delete(
   AdminController.deleteMessage
 );
 
-
 /* Footer Links */
 router.get("/footer-links", AdminController.getFooterLinks);
 router.post(
   "/footer-links",
   validateRequest(AdminValidation.bodyValidationSchema),
   AdminController.createFooterLink
+);
+router.patch(
+  "/footer-links/reorder",
+  validateRequest(AdminValidation.reorderValidationSchema),
+  AdminController.reorderFooterLinks
 );
 router.patch(
   "/footer-links/:id",

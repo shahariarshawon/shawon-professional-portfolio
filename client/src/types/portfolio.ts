@@ -140,6 +140,49 @@ export type TProjectImprovement = {
   order: number;
 };
 
+export type TProjectTechnology = {
+  id?: string;
+  name: string;
+  category?: string | null;
+  icon?: string | null;
+  order?: number;
+};
+
+export type TProjectResult = {
+  id?: string;
+  metric: string;
+  label: string;
+  description?: string | null;
+  order?: number;
+};
+
+export type TProjectArchitecture = {
+  id?: string;
+  title: string;
+  description: string;
+  diagramUrl?: string | null;
+  order?: number;
+};
+
+export type TProjectCaseStudy = {
+  id?: string;
+  overview?: string | null;
+  problemStatement?: string | null;
+  proposedSolution?: string | null;
+  architectureDetails?: string | null;
+  challengesFaced?: string | null;
+  outcomes?: string | null;
+  lessonsLearned?: string | null;
+};
+
+export type TProjectLink = {
+  id?: string;
+  label: string;
+  url: string;
+  type?: string;
+  order?: number;
+};
+
 export type TProject = {
   id: string;
   name: string;
@@ -156,6 +199,10 @@ export type TProject = {
   backendGithubLink?: string | null;
   demoCredentials?: string | null;
   authenticationDetails?: string | null;
+  architectureDiagram?: string | null;
+  problem?: string | null;
+  solution?: string | null;
+  results?: string | null;
   isFeatured: boolean;
   isEnabled: boolean;
   order: number;
@@ -163,6 +210,12 @@ export type TProject = {
   features: TProjectFeature[];
   challenges?: TProjectChallenge[];
   improvements?: TProjectImprovement[];
+  technologies?: TProjectTechnology[];
+  resultsList?: TProjectResult[];
+  architectures?: TProjectArchitecture[];
+  caseStudy?: TProjectCaseStudy | null;
+  links?: TProjectLink[];
+  diagrams?: any[];
 };
 
 export type TEducation = {
@@ -179,13 +232,23 @@ export type TEducation = {
 export type TCertification = {
   id: string;
   name: string;
+  title?: string | null;
   issuingOrganization: string;
+  issuer?: string | null;
   issueDate?: string | null;
   credentialId?: string | null;
   credentialLink?: string | null;
+  credentialUrl?: string | null;
   certificateFileUrl?: string | null;
+  imageUrl?: string | null;
   order: number;
   isEnabled: boolean;
+};
+
+export type TServiceFeature = {
+  id?: string;
+  text: string;
+  order: number;
 };
 
 export type TService = {
@@ -195,6 +258,7 @@ export type TService = {
   icon?: string | null;
   order: number;
   isEnabled: boolean;
+  features?: TServiceFeature[];
 };
 
 export type TContactInfo = {

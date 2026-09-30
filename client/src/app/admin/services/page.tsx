@@ -1,4 +1,4 @@
-import { AdminPlaceholderPage } from "@/components/admin/admin-placeholder-page";
+import { ServicesManager } from "@/components/admin/cms/services-manager";
 import { AdminLayout } from "@/components/layout/admin-layout";
 
 export const dynamic = "force-dynamic";
@@ -6,10 +6,7 @@ export const dynamic = "force-dynamic";
 export default function AdminServicesPage() {
   return (
     <AdminLayout>
-      <AdminPlaceholderPage
-        title="Services Manager"
-        description="Create and manage backend services, full-stack services, debugging services, and portfolio website services."
-      />
+      <ServicesManager />
     </AdminLayout>
   );
 }

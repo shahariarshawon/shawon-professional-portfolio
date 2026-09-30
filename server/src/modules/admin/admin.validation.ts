@@ -17,8 +17,20 @@ const bodyWithIdParamValidationSchema = z.object({
   body: z.object({}).passthrough()
 });
 
+const reorderValidationSchema = z.object({
+  body: z.object({
+    items: z.array(
+      z.object({
+        id: z.string().trim().min(1, "Id is required"),
+        order: z.number().int()
+      })
+    ).min(1, "Items array must not be empty")
+  })
+});
+
 export const AdminValidation = {
   idParamValidationSchema,
   bodyValidationSchema,
-  bodyWithIdParamValidationSchema
+  bodyWithIdParamValidationSchema,
+  reorderValidationSchema
 };

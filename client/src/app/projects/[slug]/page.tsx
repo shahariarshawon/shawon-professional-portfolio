@@ -84,11 +84,34 @@ export default async function ProjectDetailsPage({
     notFound();
   }
 
+  const softwareApplicationSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: project.name,
+    description: project.shortDescription,
+    applicationCategory: "DeveloperApplication",
+    operatingSystem: "Web",
+    author: {
+      "@type": "Person",
+      name: siteConfig.author,
+      url: siteConfig.url,
+    },
+    url: `${siteConfig.url}/projects/${project.slug}`,
+  };
+
   return (
-    <ProjectDetailsView
-      project={project}
-      navbar={portfolio?.navbar || []}
-      footer={portfolio?.footer || null}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(softwareApplicationSchema),
+        }}
+      />
+      <ProjectDetailsView
+        project={project}
+        navbar={portfolio?.navbar || []}
+        footer={portfolio?.footer || null}
+      />
+    </>
   );
 }

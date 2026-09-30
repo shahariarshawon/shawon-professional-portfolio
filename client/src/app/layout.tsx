@@ -83,9 +83,33 @@ type TRootLayoutProps = {
 };
 
 export default function RootLayout({ children }: TRootLayoutProps) {
+  const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: siteConfig.author,
+    url: siteConfig.url,
+    jobTitle: "Senior Backend Developer & Software Engineer",
+    knowsAbout: [
+      "Backend Architecture",
+      "Node.js",
+      "TypeScript",
+      "PostgreSQL",
+      "Distributed Systems",
+      "RESTful APIs",
+      "Docker",
+      "Redis",
+    ],
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(personSchema),
+          }}
+        />
         <AppProviders>
           <a href="#main-content" className="skip-link">
             Skip to main content

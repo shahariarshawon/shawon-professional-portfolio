@@ -1,27 +1,25 @@
 import AppError from "../../errors/AppError";
 import prisma from "../../utils/prisma";
 import { Prisma } from "../../generated/prisma/client";
-type TContactMessageStatus = "NEW" | "CONTACTED" | "REPLIED" | "ARCHIVED";
+import { ActivityService } from "../activity/activity.service";
 
+type TContactMessageStatus = "NEW" | "CONTACTED" | "REPLIED" | "ARCHIVED";
 type TAnyObject = Record<string, any>;
 
 const asObjectArray = (value: unknown): TAnyObject[] => {
   return Array.isArray(value) ? (value as TAnyObject[]) : [];
 };
 
-const pickSimpleData = (
-  payload: TAnyObject,
-  blockedKeys: string[]
-): TAnyObject => {
-  const data: TAnyObject = {};
-
-  Object.keys(payload).forEach((key) => {
-    if (!blockedKeys.includes(key)) {
-      data[key] = payload[key];
-    }
-  });
-
-  return data;
+const slugify = (text: string): string => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w\-]+/g, "")
+    .replace(/\-\-+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "");
 };
 
 /* ---------------- Dashboard ---------------- */
@@ -34,9 +32,15 @@ const getDashboardOverview = async () => {
     unreadMessages,
     totalExperiences,
     totalServices,
+    totalCertifications,
+    totalEducation,
     totalBlogs,
     totalAIQueries,
-    recentMessages
+    totalPageViews,
+    totalVisitors,
+    recentMessages,
+    recentActivities,
+    popularProjects
   ] = await Promise.all([
     prisma.project.count(),
     prisma.skill.count(),
@@ -48,13 +52,26 @@ const getDashboardOverview = async () => {
     }),
     prisma.experience.count(),
     prisma.service.count(),
+    prisma.certification.count(),
+    prisma.education.count(),
     prisma.blog.count(),
     prisma.aIConversation.count(),
+    prisma.pageView.count(),
+    prisma.visitorSession.count(),
     prisma.contactMessage.findMany({
       orderBy: {
         createdAt: "desc"
       },
       take: 5
+    }),
+    ActivityService.getRecentActivities(8),
+    prisma.project.findMany({
+      where: { isEnabled: true },
+      orderBy: [{ isFeatured: "desc" }, { order: "asc" }],
+      take: 4,
+      include: {
+        images: { take: 1 }
+      }
     })
   ]);
 
@@ -66,11 +83,52 @@ const getDashboardOverview = async () => {
       unreadMessages,
       experiences: totalExperiences,
       services: totalServices,
+      certifications: totalCertifications,
+      education: totalEducation,
       blogs: totalBlogs,
-      aiQueries: totalAIQueries
+      aiQueries: totalAIQueries,
+      pageViews: totalPageViews,
+      visitors: totalVisitors
     },
-    recentMessages
+    recentMessages,
+    recentActivities,
+    popularProjects
   };
+};
+
+/* ---------------- Reorder Helper ---------------- */
+
+const reorderItems = async (
+  modelName:
+    | "experience"
+    | "skillCategory"
+    | "skill"
+    | "project"
+    | "education"
+    | "certification"
+    | "service"
+    | "navbarItem"
+    | "footerLink",
+  items: { id: string; order: number }[],
+  adminId?: string
+) => {
+  const result = await prisma.$transaction(
+    items.map((item) =>
+      (prisma as any)[modelName].update({
+        where: { id: item.id },
+        data: { order: item.order }
+      })
+    )
+  );
+
+  await ActivityService.logActivity({
+    adminId,
+    action: "REORDER",
+    entity: modelName.toUpperCase(),
+    details: `Reordered ${items.length} items in ${modelName}`
+  });
+
+  return result;
 };
 
 /* ---------------- Hero ---------------- */
@@ -100,7 +158,7 @@ const getHero = async () => {
   });
 };
 
-const updateHero = async (payload: TAnyObject) => {
+const updateHero = async (payload: TAnyObject, adminId?: string) => {
   const existingHero = await prisma.heroSection.findFirst({
     orderBy: {
       updatedAt: "desc"
@@ -109,8 +167,9 @@ const updateHero = async (payload: TAnyObject) => {
 
   const { badges, techHighlights, socialLinks, ...heroData } = payload;
 
+  let heroRecord;
   if (!existingHero) {
-    return prisma.heroSection.create({
+    heroRecord = await prisma.heroSection.create({
       data: {
         ...heroData,
         name: heroData.name || "AL Shahariar Arafat Shawon",
@@ -148,98 +207,107 @@ const updateHero = async (payload: TAnyObject) => {
         socialLinks: true
       }
     });
+  } else {
+    heroRecord = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.heroSection.update({
+        where: {
+          id: existingHero.id
+        },
+        data: heroData
+      });
+
+      if (Array.isArray(badges)) {
+        await tx.heroBadge.deleteMany({
+          where: {
+            heroId: existingHero.id
+          }
+        });
+
+        if (badges.length) {
+          await tx.heroBadge.createMany({
+            data: asObjectArray(badges).map((badge, index) => ({
+              text: badge.text,
+              order: badge.order ?? index + 1,
+              isEnabled: badge.isEnabled ?? true,
+              heroId: existingHero.id
+            }))
+          });
+        }
+      }
+
+      if (Array.isArray(techHighlights)) {
+        await tx.heroTechHighlight.deleteMany({
+          where: {
+            heroId: existingHero.id
+          }
+        });
+
+        if (techHighlights.length) {
+          await tx.heroTechHighlight.createMany({
+            data: asObjectArray(techHighlights).map((tech, index) => ({
+              name: tech.name,
+              order: tech.order ?? index + 1,
+              isEnabled: tech.isEnabled ?? true,
+              heroId: existingHero.id
+            }))
+          });
+        }
+      }
+
+      if (Array.isArray(socialLinks)) {
+        await tx.socialLink.deleteMany({
+          where: {
+            heroId: existingHero.id
+          }
+        });
+
+        if (socialLinks.length) {
+          await tx.socialLink.createMany({
+            data: asObjectArray(socialLinks).map((link, index) => ({
+              platform: link.platform,
+              url: link.url,
+              icon: link.icon,
+              order: link.order ?? index + 1,
+              isEnabled: link.isEnabled ?? true,
+              heroId: existingHero.id
+            }))
+          });
+        }
+      }
+
+      return tx.heroSection.findUnique({
+        where: {
+          id: existingHero.id
+        },
+        include: {
+          badges: {
+            orderBy: {
+              order: "asc"
+            }
+          },
+          techHighlights: {
+            orderBy: {
+              order: "asc"
+            }
+          },
+          socialLinks: {
+            orderBy: {
+              order: "asc"
+            }
+          }
+        }
+      });
+    });
   }
 
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.heroSection.update({
-      where: {
-        id: existingHero.id
-      },
-      data: heroData
-    });
-
-    if (Array.isArray(badges)) {
-      await tx.heroBadge.deleteMany({
-        where: {
-          heroId: existingHero.id
-        }
-      });
-
-      if (badges.length) {
-        await tx.heroBadge.createMany({
-          data: asObjectArray(badges).map((badge, index) => ({
-            text: badge.text,
-            order: badge.order ?? index + 1,
-            isEnabled: badge.isEnabled ?? true,
-            heroId: existingHero.id
-          }))
-        });
-      }
-    }
-
-    if (Array.isArray(techHighlights)) {
-      await tx.heroTechHighlight.deleteMany({
-        where: {
-          heroId: existingHero.id
-        }
-      });
-
-      if (techHighlights.length) {
-        await tx.heroTechHighlight.createMany({
-          data: asObjectArray(techHighlights).map((tech, index) => ({
-            name: tech.name,
-            order: tech.order ?? index + 1,
-            isEnabled: tech.isEnabled ?? true,
-            heroId: existingHero.id
-          }))
-        });
-      }
-    }
-
-    if (Array.isArray(socialLinks)) {
-      await tx.socialLink.deleteMany({
-        where: {
-          heroId: existingHero.id
-        }
-      });
-
-      if (socialLinks.length) {
-        await tx.socialLink.createMany({
-          data: asObjectArray(socialLinks).map((link, index) => ({
-            platform: link.platform,
-            url: link.url,
-            icon: link.icon,
-            order: link.order ?? index + 1,
-            isEnabled: link.isEnabled ?? true,
-            heroId: existingHero.id
-          }))
-        });
-      }
-    }
-
-    return tx.heroSection.findUnique({
-      where: {
-        id: existingHero.id
-      },
-      include: {
-        badges: {
-          orderBy: {
-            order: "asc"
-          }
-        },
-        techHighlights: {
-          orderBy: {
-            order: "asc"
-          }
-        },
-        socialLinks: {
-          orderBy: {
-            order: "asc"
-          }
-        }
-      }
-    });
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "HERO",
+    details: "Updated Hero section details"
   });
+
+  return heroRecord;
 };
 
 /* ---------------- About ---------------- */
@@ -259,7 +327,7 @@ const getAbout = async () => {
   });
 };
 
-const updateAbout = async (payload: TAnyObject) => {
+const updateAbout = async (payload: TAnyObject, adminId?: string) => {
   const existingAbout = await prisma.aboutSection.findFirst({
     orderBy: {
       updatedAt: "desc"
@@ -268,8 +336,9 @@ const updateAbout = async (payload: TAnyObject) => {
 
   const { quickFacts, ...aboutData } = payload;
 
+  let aboutRecord;
   if (!existingAbout) {
-    return prisma.aboutSection.create({
+    aboutRecord = await prisma.aboutSection.create({
       data: {
         currentStatus: aboutData.currentStatus || "",
         programmingJourney: aboutData.programmingJourney || "",
@@ -292,49 +361,58 @@ const updateAbout = async (payload: TAnyObject) => {
         quickFacts: true
       }
     });
-  }
-
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.aboutSection.update({
-      where: {
-        id: existingAbout.id
-      },
-      data: aboutData
-    });
-
-    if (Array.isArray(quickFacts)) {
-      await tx.quickFact.deleteMany({
+  } else {
+    aboutRecord = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.aboutSection.update({
         where: {
-          aboutId: existingAbout.id
-        }
+          id: existingAbout.id
+        },
+        data: aboutData
       });
 
-      if (quickFacts.length) {
-        await tx.quickFact.createMany({
-          data: asObjectArray(quickFacts).map((fact, index) => ({
-            label: fact.label,
-            value: fact.value,
-            order: fact.order ?? index + 1,
-            isEnabled: fact.isEnabled ?? true,
+      if (Array.isArray(quickFacts)) {
+        await tx.quickFact.deleteMany({
+          where: {
             aboutId: existingAbout.id
-          }))
-        });
-      }
-    }
-
-    return tx.aboutSection.findUnique({
-      where: {
-        id: existingAbout.id
-      },
-      include: {
-        quickFacts: {
-          orderBy: {
-            order: "asc"
           }
+        });
+
+        if (quickFacts.length) {
+          await tx.quickFact.createMany({
+            data: asObjectArray(quickFacts).map((fact, index) => ({
+              label: fact.label,
+              value: fact.value,
+              order: fact.order ?? index + 1,
+              isEnabled: fact.isEnabled ?? true,
+              aboutId: existingAbout.id
+            }))
+          });
         }
       }
+
+      return tx.aboutSection.findUnique({
+        where: {
+          id: existingAbout.id
+        },
+        include: {
+          quickFacts: {
+            orderBy: {
+              order: "asc"
+            }
+          }
+        }
+      });
     });
+  }
+
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "ABOUT",
+    details: "Updated About section and quick facts"
   });
+
+  return aboutRecord;
 };
 
 /* ---------------- Navbar ---------------- */
@@ -347,27 +425,47 @@ const getNavbarItems = async () => {
   });
 };
 
-const createNavbarItem = async (payload: TAnyObject) => {
-  return prisma.navbarItem.create({
+const createNavbarItem = async (payload: TAnyObject, adminId?: string) => {
+  const result = await prisma.navbarItem.create({
     data: payload as any
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "CREATE",
+    entity: "NAVBAR",
+    entityId: result.id,
+    details: `Created navbar item: ${result.label}`
+  });
+  return result;
 };
 
-const updateNavbarItem = async (id: string, payload: TAnyObject) => {
-  return prisma.navbarItem.update({
-    where: {
-      id
-    },
+const updateNavbarItem = async (id: string, payload: TAnyObject, adminId?: string) => {
+  const result = await prisma.navbarItem.update({
+    where: { id },
     data: payload as any
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "NAVBAR",
+    entityId: id,
+    details: `Updated navbar item: ${result.label}`
+  });
+  return result;
 };
 
-const deleteNavbarItem = async (id: string) => {
-  return prisma.navbarItem.delete({
-    where: {
-      id
-    }
+const deleteNavbarItem = async (id: string, adminId?: string) => {
+  const result = await prisma.navbarItem.delete({
+    where: { id }
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "DELETE",
+    entity: "NAVBAR",
+    entityId: id,
+    details: `Deleted navbar item: ${result.label}`
+  });
+  return result;
 };
 
 /* ---------------- Experience ---------------- */
@@ -392,10 +490,10 @@ const getExperiences = async () => {
   });
 };
 
-const createExperience = async (payload: TAnyObject) => {
+const createExperience = async (payload: TAnyObject, adminId?: string) => {
   const { bullets, metrics, ...experienceData } = payload;
 
-  return prisma.experience.create({
+  const result = await prisma.experience.create({
     data: {
       ...experienceData,
       bullets: {
@@ -417,24 +515,30 @@ const createExperience = async (payload: TAnyObject) => {
       metrics: true
     }
   });
+
+  await ActivityService.logActivity({
+    adminId,
+    action: "CREATE",
+    entity: "EXPERIENCE",
+    entityId: result.id,
+    details: `Created experience at ${result.companyName} (${result.role})`
+  });
+
+  return result;
 };
 
-const updateExperience = async (id: string, payload: TAnyObject) => {
+const updateExperience = async (id: string, payload: TAnyObject, adminId?: string) => {
   const { bullets, metrics, ...experienceData } = payload;
 
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.experience.update({
-      where: {
-        id
-      },
+      where: { id },
       data: experienceData as any
     });
 
     if (Array.isArray(bullets)) {
       await tx.experienceBullet.deleteMany({
-        where: {
-          experienceId: id
-        }
+        where: { experienceId: id }
       });
 
       if (bullets.length) {
@@ -450,9 +554,7 @@ const updateExperience = async (id: string, payload: TAnyObject) => {
 
     if (Array.isArray(metrics)) {
       await tx.experienceMetric.deleteMany({
-        where: {
-          experienceId: id
-        }
+        where: { experienceId: id }
       });
 
       if (metrics.length) {
@@ -468,31 +570,41 @@ const updateExperience = async (id: string, payload: TAnyObject) => {
     }
 
     return tx.experience.findUnique({
-      where: {
-        id
-      },
+      where: { id },
       include: {
         bullets: {
-          orderBy: {
-            order: "asc"
-          }
+          orderBy: { order: "asc" }
         },
         metrics: {
-          orderBy: {
-            order: "asc"
-          }
+          orderBy: { order: "asc" }
         }
       }
     });
   });
+
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "EXPERIENCE",
+    entityId: id,
+    details: `Updated experience at ${result?.companyName}`
+  });
+
+  return result;
 };
 
-const deleteExperience = async (id: string) => {
-  return prisma.experience.delete({
-    where: {
-      id
-    }
+const deleteExperience = async (id: string, adminId?: string) => {
+  const result = await prisma.experience.delete({
+    where: { id }
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "DELETE",
+    entity: "EXPERIENCE",
+    entityId: id,
+    details: `Deleted experience at ${result.companyName}`
+  });
+  return result;
 };
 
 /* ---------------- Skill Categories and Skills ---------------- */
@@ -512,27 +624,47 @@ const getSkillCategories = async () => {
   });
 };
 
-const createSkillCategory = async (payload: TAnyObject) => {
-  return prisma.skillCategory.create({
+const createSkillCategory = async (payload: TAnyObject, adminId?: string) => {
+  const result = await prisma.skillCategory.create({
     data: payload as any
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "CREATE",
+    entity: "SKILL_CATEGORY",
+    entityId: result.id,
+    details: `Created skill category: ${result.name}`
+  });
+  return result;
 };
 
-const updateSkillCategory = async (id: string, payload: TAnyObject) => {
-  return prisma.skillCategory.update({
-    where: {
-      id
-    },
+const updateSkillCategory = async (id: string, payload: TAnyObject, adminId?: string) => {
+  const result = await prisma.skillCategory.update({
+    where: { id },
     data: payload as any
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "SKILL_CATEGORY",
+    entityId: id,
+    details: `Updated skill category: ${result.name}`
+  });
+  return result;
 };
 
-const deleteSkillCategory = async (id: string) => {
-  return prisma.skillCategory.delete({
-    where: {
-      id
-    }
+const deleteSkillCategory = async (id: string, adminId?: string) => {
+  const result = await prisma.skillCategory.delete({
+    where: { id }
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "DELETE",
+    entity: "SKILL_CATEGORY",
+    entityId: id,
+    details: `Deleted skill category: ${result.name}`
+  });
+  return result;
 };
 
 const getSkills = async () => {
@@ -546,33 +678,53 @@ const getSkills = async () => {
   });
 };
 
-const createSkill = async (payload: TAnyObject) => {
-  return prisma.skill.create({
+const createSkill = async (payload: TAnyObject, adminId?: string) => {
+  const result = await prisma.skill.create({
     data: payload as any,
     include: {
       category: true
     }
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "CREATE",
+    entity: "SKILL",
+    entityId: result.id,
+    details: `Created skill: ${result.name}`
+  });
+  return result;
 };
 
-const updateSkill = async (id: string, payload: TAnyObject) => {
-  return prisma.skill.update({
-    where: {
-      id
-    },
+const updateSkill = async (id: string, payload: TAnyObject, adminId?: string) => {
+  const result = await prisma.skill.update({
+    where: { id },
     data: payload as any,
     include: {
       category: true
     }
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "SKILL",
+    entityId: id,
+    details: `Updated skill: ${result.name}`
+  });
+  return result;
 };
 
-const deleteSkill = async (id: string) => {
-  return prisma.skill.delete({
-    where: {
-      id
-    }
+const deleteSkill = async (id: string, adminId?: string) => {
+  const result = await prisma.skill.delete({
+    where: { id }
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "DELETE",
+    entity: "SKILL",
+    entityId: id,
+    details: `Deleted skill: ${result.name}`
+  });
+  return result;
 };
 
 /* ---------------- Projects ---------------- */
@@ -607,17 +759,54 @@ const getProjects = async () => {
         orderBy: {
           order: "asc"
         }
+      },
+      technologies: {
+        orderBy: {
+          order: "asc"
+        }
+      },
+      resultsList: {
+        orderBy: {
+          order: "asc"
+        }
+      },
+      architectures: {
+        orderBy: {
+          order: "asc"
+        }
+      },
+      caseStudy: true,
+      links: {
+        orderBy: {
+          order: "asc"
+        }
       }
     }
   });
 };
 
-const createProject = async (payload: TAnyObject) => {
-  const { images, features, challenges, improvements, ...projectData } = payload;
+const createProject = async (payload: TAnyObject, adminId?: string) => {
+  const {
+    images,
+    features,
+    challenges,
+    improvements,
+    technologies,
+    resultsList,
+    architectures,
+    caseStudy,
+    links,
+    ...projectData
+  } = payload;
 
-  return prisma.project.create({
+  const slug = projectData.slug
+    ? slugify(projectData.slug)
+    : slugify(projectData.name || "project");
+
+  const result = await prisma.project.create({
     data: {
       ...projectData,
+      slug,
       images: {
         create: asObjectArray(images).map((image, index) => ({
           url: image.url,
@@ -646,33 +835,104 @@ const createProject = async (payload: TAnyObject) => {
           improvement: improvement.improvement,
           order: improvement.order ?? index + 1
         }))
+      },
+      technologies: {
+        create: asObjectArray(technologies).map((tech, index) => ({
+          name: tech.name,
+          category: tech.category,
+          icon: tech.icon,
+          order: tech.order ?? index + 1
+        }))
+      },
+      resultsList: {
+        create: asObjectArray(resultsList).map((resItem, index) => ({
+          metric: resItem.metric,
+          label: resItem.label,
+          description: resItem.description,
+          order: resItem.order ?? index + 1
+        }))
+      },
+      architectures: {
+        create: asObjectArray(architectures).map((arch, index) => ({
+          title: arch.title,
+          description: arch.description,
+          diagramUrl: arch.diagramUrl,
+          order: arch.order ?? index + 1
+        }))
+      },
+      caseStudy: caseStudy
+        ? {
+            create: {
+              overview: caseStudy.overview,
+              problemStatement: caseStudy.problemStatement,
+              proposedSolution: caseStudy.proposedSolution,
+              architectureDetails: caseStudy.architectureDetails,
+              challengesFaced: caseStudy.challengesFaced,
+              outcomes: caseStudy.outcomes,
+              lessonsLearned: caseStudy.lessonsLearned
+            }
+          }
+        : undefined,
+      links: {
+        create: asObjectArray(links).map((link, index) => ({
+          label: link.label,
+          url: link.url,
+          type: link.type || "OTHER",
+          order: link.order ?? index + 1
+        }))
       }
     } as any,
     include: {
       images: true,
       features: true,
       challenges: true,
-      improvements: true
+      improvements: true,
+      technologies: true,
+      resultsList: true,
+      architectures: true,
+      caseStudy: true,
+      links: true
     }
   });
+
+  await ActivityService.logActivity({
+    adminId,
+    action: "CREATE",
+    entity: "PROJECT",
+    entityId: result.id,
+    details: `Created project: ${result.name}`
+  });
+
+  return result;
 };
 
-const updateProject = async (id: string, payload: TAnyObject) => {
-  const { images, features, challenges, improvements, ...projectData } = payload;
+const updateProject = async (id: string, payload: TAnyObject, adminId?: string) => {
+  const {
+    images,
+    features,
+    challenges,
+    improvements,
+    technologies,
+    resultsList,
+    architectures,
+    caseStudy,
+    links,
+    ...projectData
+  } = payload;
 
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  if (projectData.slug) {
+    projectData.slug = slugify(projectData.slug);
+  }
+
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.project.update({
-      where: {
-        id
-      },
+      where: { id },
       data: projectData as any
     });
 
     if (Array.isArray(images)) {
       await tx.projectImage.deleteMany({
-        where: {
-          projectId: id
-        }
+        where: { projectId: id }
       });
 
       if (images.length) {
@@ -690,9 +950,7 @@ const updateProject = async (id: string, payload: TAnyObject) => {
 
     if (Array.isArray(features)) {
       await tx.projectFeature.deleteMany({
-        where: {
-          projectId: id
-        }
+        where: { projectId: id }
       });
 
       if (features.length) {
@@ -710,9 +968,7 @@ const updateProject = async (id: string, payload: TAnyObject) => {
 
     if (Array.isArray(challenges)) {
       await tx.projectChallenge.deleteMany({
-        where: {
-          projectId: id
-        }
+        where: { projectId: id }
       });
 
       if (challenges.length) {
@@ -729,9 +985,7 @@ const updateProject = async (id: string, payload: TAnyObject) => {
 
     if (Array.isArray(improvements)) {
       await tx.projectImprovement.deleteMany({
-        where: {
-          projectId: id
-        }
+        where: { projectId: id }
       });
 
       if (improvements.length) {
@@ -745,42 +999,142 @@ const updateProject = async (id: string, payload: TAnyObject) => {
       }
     }
 
-    return tx.project.findUnique({
-      where: {
-        id
-      },
-      include: {
-        images: {
-          orderBy: {
-            order: "asc"
-          }
+    if (Array.isArray(technologies)) {
+      await tx.projectTechnology.deleteMany({
+        where: { projectId: id }
+      });
+
+      if (technologies.length) {
+        await tx.projectTechnology.createMany({
+          data: asObjectArray(technologies).map((tech, index) => ({
+            name: tech.name,
+            category: tech.category,
+            icon: tech.icon,
+            order: tech.order ?? index + 1,
+            projectId: id
+          }))
+        });
+      }
+    }
+
+    if (Array.isArray(resultsList)) {
+      await tx.projectResult.deleteMany({
+        where: { projectId: id }
+      });
+
+      if (resultsList.length) {
+        await tx.projectResult.createMany({
+          data: asObjectArray(resultsList).map((resItem, index) => ({
+            metric: resItem.metric,
+            label: resItem.label,
+            description: resItem.description,
+            order: resItem.order ?? index + 1,
+            projectId: id
+          }))
+        });
+      }
+    }
+
+    if (Array.isArray(architectures)) {
+      await tx.projectArchitecture.deleteMany({
+        where: { projectId: id }
+      });
+
+      if (architectures.length) {
+        await tx.projectArchitecture.createMany({
+          data: asObjectArray(architectures).map((arch, index) => ({
+            title: arch.title,
+            description: arch.description,
+            diagramUrl: arch.diagramUrl,
+            order: arch.order ?? index + 1,
+            projectId: id
+          }))
+        });
+      }
+    }
+
+    if (caseStudy) {
+      await tx.projectCaseStudy.upsert({
+        where: { projectId: id },
+        create: {
+          projectId: id,
+          overview: caseStudy.overview,
+          problemStatement: caseStudy.problemStatement,
+          proposedSolution: caseStudy.proposedSolution,
+          architectureDetails: caseStudy.architectureDetails,
+          challengesFaced: caseStudy.challengesFaced,
+          outcomes: caseStudy.outcomes,
+          lessonsLearned: caseStudy.lessonsLearned
         },
-        features: {
-          orderBy: {
-            order: "asc"
-          }
-        },
-        challenges: {
-          orderBy: {
-            order: "asc"
-          }
-        },
-        improvements: {
-          orderBy: {
-            order: "asc"
-          }
+        update: {
+          overview: caseStudy.overview,
+          problemStatement: caseStudy.problemStatement,
+          proposedSolution: caseStudy.proposedSolution,
+          architectureDetails: caseStudy.architectureDetails,
+          challengesFaced: caseStudy.challengesFaced,
+          outcomes: caseStudy.outcomes,
+          lessonsLearned: caseStudy.lessonsLearned
         }
+      });
+    }
+
+    if (Array.isArray(links)) {
+      await tx.projectLink.deleteMany({
+        where: { projectId: id }
+      });
+
+      if (links.length) {
+        await tx.projectLink.createMany({
+          data: asObjectArray(links).map((link, index) => ({
+            label: link.label,
+            url: link.url,
+            type: link.type || "OTHER",
+            order: link.order ?? index + 1,
+            projectId: id
+          }))
+        });
+      }
+    }
+
+    return tx.project.findUnique({
+      where: { id },
+      include: {
+        images: { orderBy: { order: "asc" } },
+        features: { orderBy: { order: "asc" } },
+        challenges: { orderBy: { order: "asc" } },
+        improvements: { orderBy: { order: "asc" } },
+        technologies: { orderBy: { order: "asc" } },
+        resultsList: { orderBy: { order: "asc" } },
+        architectures: { orderBy: { order: "asc" } },
+        caseStudy: true,
+        links: { orderBy: { order: "asc" } }
       }
     });
   });
+
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "PROJECT",
+    entityId: id,
+    details: `Updated project: ${result?.name}`
+  });
+
+  return result;
 };
 
-const deleteProject = async (id: string) => {
-  return prisma.project.delete({
-    where: {
-      id
-    }
+const deleteProject = async (id: string, adminId?: string) => {
+  const result = await prisma.project.delete({
+    where: { id }
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "DELETE",
+    entity: "PROJECT",
+    entityId: id,
+    details: `Deleted project: ${result.name}`
+  });
+  return result;
 };
 
 /* ---------------- Education ---------------- */
@@ -793,27 +1147,47 @@ const getEducation = async () => {
   });
 };
 
-const createEducation = async (payload: TAnyObject) => {
-  return prisma.education.create({
+const createEducation = async (payload: TAnyObject, adminId?: string) => {
+  const result = await prisma.education.create({
     data: payload as any
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "CREATE",
+    entity: "EDUCATION",
+    entityId: result.id,
+    details: `Created education: ${result.degree} at ${result.institution}`
+  });
+  return result;
 };
 
-const updateEducation = async (id: string, payload: TAnyObject) => {
-  return prisma.education.update({
-    where: {
-      id
-    },
+const updateEducation = async (id: string, payload: TAnyObject, adminId?: string) => {
+  const result = await prisma.education.update({
+    where: { id },
     data: payload as any
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "EDUCATION",
+    entityId: id,
+    details: `Updated education: ${result.degree}`
+  });
+  return result;
 };
 
-const deleteEducation = async (id: string) => {
-  return prisma.education.delete({
-    where: {
-      id
-    }
+const deleteEducation = async (id: string, adminId?: string) => {
+  const result = await prisma.education.delete({
+    where: { id }
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "DELETE",
+    entity: "EDUCATION",
+    entityId: id,
+    details: `Deleted education: ${result.degree}`
+  });
+  return result;
 };
 
 /* ---------------- Certifications ---------------- */
@@ -826,27 +1200,72 @@ const getCertifications = async () => {
   });
 };
 
-const createCertification = async (payload: TAnyObject) => {
-  return prisma.certification.create({
-    data: payload as any
-  });
+const normalizeCertificationPayload = (payload: TAnyObject) => {
+  const name = payload.name || payload.title || "Certification";
+  const title = payload.title || payload.name || "Certification";
+  const issuingOrganization = payload.issuingOrganization || payload.issuer || "";
+  const issuer = payload.issuer || payload.issuingOrganization || "";
+  const credentialLink = payload.credentialLink || payload.credentialUrl || null;
+  const credentialUrl = payload.credentialUrl || payload.credentialLink || null;
+  const certificateFileUrl = payload.certificateFileUrl || payload.imageUrl || null;
+  const imageUrl = payload.imageUrl || payload.certificateFileUrl || null;
+
+  return {
+    ...payload,
+    name,
+    title,
+    issuingOrganization,
+    issuer,
+    credentialLink,
+    credentialUrl,
+    certificateFileUrl,
+    imageUrl
+  };
 };
 
-const updateCertification = async (id: string, payload: TAnyObject) => {
-  return prisma.certification.update({
-    where: {
-      id
-    },
-    data: payload as any
+const createCertification = async (payload: TAnyObject, adminId?: string) => {
+  const normalized = normalizeCertificationPayload(payload);
+  const result = await prisma.certification.create({
+    data: normalized as any
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "CREATE",
+    entity: "CERTIFICATION",
+    entityId: result.id,
+    details: `Created certification: ${result.name}`
+  });
+  return result;
 };
 
-const deleteCertification = async (id: string) => {
-  return prisma.certification.delete({
-    where: {
-      id
-    }
+const updateCertification = async (id: string, payload: TAnyObject, adminId?: string) => {
+  const normalized = normalizeCertificationPayload(payload);
+  const result = await prisma.certification.update({
+    where: { id },
+    data: normalized as any
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "CERTIFICATION",
+    entityId: id,
+    details: `Updated certification: ${result.name}`
+  });
+  return result;
+};
+
+const deleteCertification = async (id: string, adminId?: string) => {
+  const result = await prisma.certification.delete({
+    where: { id }
+  });
+  await ActivityService.logActivity({
+    adminId,
+    action: "DELETE",
+    entity: "CERTIFICATION",
+    entityId: id,
+    details: `Deleted certification: ${result.name}`
+  });
+  return result;
 };
 
 /* ---------------- Services ---------------- */
@@ -855,31 +1274,104 @@ const getServices = async () => {
   return prisma.service.findMany({
     orderBy: {
       order: "asc"
-    }
-  });
-};
-
-const createService = async (payload: TAnyObject) => {
-  return prisma.service.create({
-    data: payload as any
-  });
-};
-
-const updateService = async (id: string, payload: TAnyObject) => {
-  return prisma.service.update({
-    where: {
-      id
     },
-    data: payload as any
+    include: {
+      features: {
+        orderBy: {
+          order: "asc"
+        }
+      }
+    }
   });
 };
 
-const deleteService = async (id: string) => {
-  return prisma.service.delete({
-    where: {
-      id
+const createService = async (payload: TAnyObject, adminId?: string) => {
+  const { features, ...serviceData } = payload;
+
+  const result = await prisma.service.create({
+    data: {
+      ...serviceData,
+      features: {
+        create: asObjectArray(features).map((feat, index) => ({
+          text: feat.text,
+          order: feat.order ?? index + 1
+        }))
+      }
+    } as any,
+    include: {
+      features: true
     }
   });
+
+  await ActivityService.logActivity({
+    adminId,
+    action: "CREATE",
+    entity: "SERVICE",
+    entityId: result.id,
+    details: `Created service: ${result.title}`
+  });
+
+  return result;
+};
+
+const updateService = async (id: string, payload: TAnyObject, adminId?: string) => {
+  const { features, ...serviceData } = payload;
+
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await tx.service.update({
+      where: { id },
+      data: serviceData as any
+    });
+
+    if (Array.isArray(features)) {
+      await tx.serviceFeature.deleteMany({
+        where: { serviceId: id }
+      });
+
+      if (features.length) {
+        await tx.serviceFeature.createMany({
+          data: asObjectArray(features).map((feat, index) => ({
+            text: feat.text,
+            order: feat.order ?? index + 1,
+            serviceId: id
+          }))
+        });
+      }
+    }
+
+    return tx.service.findUnique({
+      where: { id },
+      include: {
+        features: {
+          orderBy: { order: "asc" }
+        }
+      }
+    });
+  });
+
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "SERVICE",
+    entityId: id,
+    details: `Updated service: ${result?.title}`
+  });
+
+  return result;
+};
+
+const deleteService = async (id: string, adminId?: string) => {
+  const result = await prisma.service.delete({
+    where: { id }
+  });
+  await ActivityService.logActivity({
+    adminId,
+    action: "DELETE",
+    entity: "SERVICE",
+    entityId: id,
+    details: `Deleted service: ${result.title}`
+  });
+  return result;
 };
 
 /* ---------------- Contact Info and Messages ---------------- */
@@ -892,30 +1384,42 @@ const getContactInfo = async () => {
   });
 };
 
-const updateContactInfo = async (payload: TAnyObject) => {
+const updateContactInfo = async (payload: TAnyObject, adminId?: string) => {
   const existingContactInfo = await prisma.contactInfo.findFirst({
     orderBy: {
       updatedAt: "desc"
     }
   });
 
+  let result;
   if (!existingContactInfo) {
-    return prisma.contactInfo.create({
+    result = await prisma.contactInfo.create({
+      data: payload as any
+    });
+  } else {
+    result = await prisma.contactInfo.update({
+      where: {
+        id: existingContactInfo.id
+      },
       data: payload as any
     });
   }
 
-  return prisma.contactInfo.update({
-    where: {
-      id: existingContactInfo.id
-    },
-    data: payload as any
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "CONTACT_INFO",
+    details: "Updated contact information"
   });
+
+  return result;
 };
 
 const getMessages = async (status?: string) => {
   const validStatuses = ["NEW", "CONTACTED", "REPLIED", "ARCHIVED"];
-  const validStatus = validStatuses.includes(status || "") ? (status as TContactMessageStatus) : undefined;
+  const validStatus = validStatuses.includes(status || "")
+    ? (status as TContactMessageStatus)
+    : undefined;
 
   return prisma.contactMessage.findMany({
     where: validStatus
@@ -929,23 +1433,41 @@ const getMessages = async (status?: string) => {
   });
 };
 
-const updateMessageStatus = async (id: string, status: TContactMessageStatus) => {
-  return prisma.contactMessage.update({
-    where: {
-      id
-    },
-    data: {
-      status
-    }
+const updateMessageStatus = async (
+  id: string,
+  status: TContactMessageStatus,
+  adminId?: string
+) => {
+  const result = await prisma.contactMessage.update({
+    where: { id },
+    data: { status }
   });
+
+  await ActivityService.logActivity({
+    adminId,
+    action: "STATUS_TOGGLE",
+    entity: "MESSAGE",
+    entityId: id,
+    details: `Updated message from ${result.name} to ${status}`
+  });
+
+  return result;
 };
 
-const deleteMessage = async (id: string) => {
-  return prisma.contactMessage.delete({
-    where: {
-      id
-    }
+const deleteMessage = async (id: string, adminId?: string) => {
+  const result = await prisma.contactMessage.delete({
+    where: { id }
   });
+
+  await ActivityService.logActivity({
+    adminId,
+    action: "DELETE",
+    entity: "MESSAGE",
+    entityId: id,
+    details: `Deleted message from ${result.name}`
+  });
+
+  return result;
 };
 
 /* ---------------- Footer Links ---------------- */
@@ -958,27 +1480,47 @@ const getFooterLinks = async () => {
   });
 };
 
-const createFooterLink = async (payload: TAnyObject) => {
-  return prisma.footerLink.create({
+const createFooterLink = async (payload: TAnyObject, adminId?: string) => {
+  const result = await prisma.footerLink.create({
     data: payload as any
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "CREATE",
+    entity: "FOOTER_LINK",
+    entityId: result.id,
+    details: `Created footer link: ${result.label}`
+  });
+  return result;
 };
 
-const updateFooterLink = async (id: string, payload: TAnyObject) => {
-  return prisma.footerLink.update({
-    where: {
-      id
-    },
+const updateFooterLink = async (id: string, payload: TAnyObject, adminId?: string) => {
+  const result = await prisma.footerLink.update({
+    where: { id },
     data: payload as any
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "FOOTER_LINK",
+    entityId: id,
+    details: `Updated footer link: ${result.label}`
+  });
+  return result;
 };
 
-const deleteFooterLink = async (id: string) => {
-  return prisma.footerLink.delete({
-    where: {
-      id
-    }
+const deleteFooterLink = async (id: string, adminId?: string) => {
+  const result = await prisma.footerLink.delete({
+    where: { id }
   });
+  await ActivityService.logActivity({
+    adminId,
+    action: "DELETE",
+    entity: "FOOTER_LINK",
+    entityId: id,
+    details: `Deleted footer link: ${result.label}`
+  });
+  return result;
 };
 
 /* ---------------- Site Settings ---------------- */
@@ -991,28 +1533,38 @@ const getSiteSettings = async () => {
   });
 };
 
-const updateSiteSettings = async (payload: TAnyObject) => {
+const updateSiteSettings = async (payload: TAnyObject, adminId?: string) => {
   const existingSettings = await prisma.siteSetting.findFirst({
     orderBy: {
       updatedAt: "desc"
     }
   });
 
+  let result;
   if (!existingSettings) {
-    return prisma.siteSetting.create({
+    result = await prisma.siteSetting.create({
+      data: payload as any
+    });
+  } else {
+    result = await prisma.siteSetting.update({
+      where: {
+        id: existingSettings.id
+      },
       data: payload as any
     });
   }
 
-  return prisma.siteSetting.update({
-    where: {
-      id: existingSettings.id
-    },
-    data: payload as any
+  await ActivityService.logActivity({
+    adminId,
+    action: "UPDATE",
+    entity: "SITE_SETTINGS",
+    details: "Updated site title, SEO configuration, or color tokens"
   });
+
+  return result;
 };
 
-/* ---------------- Safe Delete Wrapper ---------------- */
+/* ---------------- Safe Record Exists Wrapper ---------------- */
 
 const ensureRecordExists = async (
   modelName: string,
@@ -1024,13 +1576,13 @@ const ensureRecordExists = async (
     if (error?.code === "P2025") {
       throw new AppError(404, `${modelName} not found`);
     }
-
     throw error;
   }
 };
 
 export const AdminService = {
   getDashboardOverview,
+  reorderItems,
 
   getHero,
   updateHero,

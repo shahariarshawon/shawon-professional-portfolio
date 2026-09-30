@@ -1,4 +1,5 @@
 import {
+  Award,
   BriefcaseBusiness,
   FileText,
   GraduationCap,
@@ -47,6 +48,11 @@ export const adminNavItems = [
     label: "Education",
     href: "/admin/education",
     icon: GraduationCap
+  },
+  {
+    label: "Certifications",
+    href: "/admin/certifications",
+    icon: Award
   },
   {
     label: "Services",

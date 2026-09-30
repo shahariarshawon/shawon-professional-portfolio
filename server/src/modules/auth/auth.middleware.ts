@@ -8,7 +8,11 @@ import prisma from "../../utils/prisma";
 
 const requireAuth = (...requiredRoles: TAdminRole[]) => {
   return catchAsync(async (req: Request, _res: Response, next: NextFunction) => {
-    const token = req.cookies?.[env.authCookieName];
+    const authHeader = req.headers.authorization;
+    const bearerToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : null;
+    const token = bearerToken || req.cookies?.[env.authCookieName];
 
     if (!token) {
       throw new AppError(401, "You are not authenticated");

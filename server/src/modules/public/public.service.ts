@@ -138,7 +138,10 @@ const getProjects = async () => {
   });
 };
 
-const getProjectBySlug = async (slug: string) => {
+const getProjectBySlug = async (
+  slug: string,
+  context?: { visitorId?: string; ipAddress?: string; userAgent?: string }
+) => {
   const project = await prisma.project.findFirst({
     where: {
       slug,
@@ -164,13 +167,48 @@ const getProjectBySlug = async (slug: string) => {
         orderBy: {
           order: "asc"
         }
-      }
+      },
+      technologies: {
+        orderBy: {
+          order: "asc"
+        }
+      },
+      resultsList: {
+        orderBy: {
+          order: "asc"
+        }
+      },
+      architectures: {
+        orderBy: {
+          order: "asc"
+        }
+      },
+      caseStudy: true,
+      links: {
+        orderBy: {
+          order: "asc"
+        }
+      },
+      diagrams: true
     }
   });
 
   if (!project) {
     throw new AppError(404, "Project not found");
   }
+
+  // Record project view asynchronously
+  prisma.projectView
+    .create({
+      data: {
+        projectId: project.id,
+        slug: project.slug,
+        visitorId: context?.visitorId,
+        ipAddress: context?.ipAddress,
+        userAgent: context?.userAgent
+      }
+    })
+    .catch(() => {});
 
   return project;
 };
@@ -204,6 +242,13 @@ const getServices = async () => {
     },
     orderBy: {
       order: "asc"
+    },
+    include: {
+      features: {
+        orderBy: {
+          order: "asc"
+        }
+      }
     }
   });
 };

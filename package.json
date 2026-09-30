@@ -9,8 +9,9 @@
     "dev": "pnpm --parallel -r run dev",
     "build": "pnpm -r run build",
     "type-check": "pnpm -r run type-check",
-    "test:server": "pnpm --dir server type-check && pnpm --dir server build",
-    "test:client": "pnpm --dir client type-check && pnpm --dir client build",
+    "test": "pnpm --dir server test",
+    "test:server": "pnpm --dir server type-check && pnpm --dir server test",
+    "test:client": "pnpm --dir client type-check",
     "test:all": "pnpm test:server && pnpm test:client"
   },
   "keywords": [

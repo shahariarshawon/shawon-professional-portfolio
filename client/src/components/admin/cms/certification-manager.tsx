@@ -4,12 +4,10 @@ import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Award,
-  Plus,
   Trash2,
   Edit2,
   Calendar,
   ExternalLink,
-  FileCheck,
   Loader2,
   X,
   Save
@@ -31,6 +29,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/shared/loading-state";
 import { TCertification } from "@/types/portfolio";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export function CertificationManager() {
   const queryClient = useQueryClient();
@@ -217,7 +216,7 @@ export function CertificationManager() {
               <Card className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-(--color-accent)/40 transition">
                 <div className="flex items-start gap-4">
                   {certBadge ? (
-                    <img
+                    <SafeImage
                       src={certBadge}
                       alt={certName || "Certification"}
                       className="h-12 w-12 rounded-xl object-contain border border-site p-1 bg-card shrink-0"

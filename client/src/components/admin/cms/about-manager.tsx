@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Save,
   Plus,
   Trash2,
-  Edit2,
   Sparkles,
   User,
   Info,
@@ -46,21 +45,23 @@ export function AboutManager() {
   const [newFact, setNewFact] = useState({ label: "", value: "" });
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  useEffect(() => {
-    if (about) {
-      setFormData({
-        currentStatus: about.currentStatus || "",
-        programmingJourney: about.programmingJourney || "",
-        workEnjoyment: about.workEnjoyment || "",
-        backendInterest: about.backendInterest || "",
-        futurePlan: about.futurePlan || "",
-        personality: about.personality || "",
-        hobbies: about.hobbies || "",
-        imageUrl: about.imageUrl || "",
-        quickFacts: about.quickFacts || []
-      });
-    }
-  }, [about]);
+  // Load the saved content into the editable form whenever a new copy arrives
+  // (adjusting state during render avoids an extra cascading render pass).
+  const [loadedAbout, setLoadedAbout] = useState(about);
+  if (about && about !== loadedAbout) {
+    setLoadedAbout(about);
+    setFormData({
+      currentStatus: about.currentStatus || "",
+      programmingJourney: about.programmingJourney || "",
+      workEnjoyment: about.workEnjoyment || "",
+      backendInterest: about.backendInterest || "",
+      futurePlan: about.futurePlan || "",
+      personality: about.personality || "",
+      hobbies: about.hobbies || "",
+      imageUrl: about.imageUrl || "",
+      quickFacts: about.quickFacts || []
+    });
+  }
 
   const updateMutation = useMutation({
     mutationFn: updateAdminAbout,
@@ -71,7 +72,7 @@ export function AboutManager() {
     }
   });
 
-  const handleInputChange = (field: keyof TAboutSection, value: any) => {
+  const handleInputChange = (field: keyof TAboutSection, value: TAboutSection[keyof TAboutSection]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 

@@ -1,19 +1,28 @@
 import { CorsOptions } from "cors";
 import { env } from "./env";
 
-const allowedOrigins = env.clientUrl
+const normalizeOrigin = (origin: string) => origin.trim().replace(/\/+$/, "");
+
+/** CLIENT_URL may hold several comma-separated origins (prod + previews). */
+export const allowedOrigins = env.clientUrl
   .split(",")
-  .map((origin) => origin.trim())
+  .map(normalizeOrigin)
   .filter(Boolean);
 
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Server-to-server calls (Next.js SSR, health checks, curl) send no Origin.
+    if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
       callback(null, true);
       return;
     }
 
-    callback(new Error(`CORS blocked request from origin: ${origin}`));
+    // Reject without throwing: the browser blocks the response, while the API
+    // doesn't turn every stray origin into a logged 500.
+    callback(null, false);
   },
-  credentials: true
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 86400
 };

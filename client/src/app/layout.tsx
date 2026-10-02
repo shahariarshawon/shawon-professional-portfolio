@@ -23,6 +23,8 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   weight: ["400", "500"],
   display: "swap",
+  // Only used for small code/label text; don't compete with the main fonts.
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -66,8 +68,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.title,
     description: siteConfig.description,
-    creator: "@shawon",
   },
+
+  // Icons come from the file conventions in this folder (icon.svg, favicon.ico,
+  // apple-icon.png), all rendered from the navbar BrandMark. Next.js appends a
+  // content hash to the icon URLs, so a changed logo is never stuck in caches.
 
   robots: {
     index: true,

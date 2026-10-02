@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Settings,
   Save,
   Globe,
   Palette,
-  Mail,
   Link as LinkIcon,
   Plus,
   Trash2,
@@ -23,8 +21,10 @@ import {
   createAdminFooterLink,
   updateAdminFooterLink,
   deleteAdminFooterLink,
-  reorderAdminFooterLinks
+  reorderAdminFooterLinks,
+  type TFooterLinkPayload
 } from "@/lib/admin-api";
+import type { TFooterLink } from "@/types/portfolio";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { SortableList } from "@/components/admin/cms/sortable-list";
 import { StatusToggle } from "@/components/admin/cms/status-toggle";
@@ -32,7 +32,6 @@ import { ConfirmDialog } from "@/components/admin/cms/confirm-dialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/shared/loading-state";
-import { TSiteSettings } from "@/types/portfolio";
 
 export function SettingsManager() {
   const queryClient = useQueryClient();
@@ -64,23 +63,26 @@ export function SettingsManager() {
 
   // Footer Link Modal
   const [isFooterModalOpen, setIsFooterModalOpen] = useState(false);
-  const [editingFooterLink, setEditingFooterLink] = useState<any>(null);
+  const [editingFooterLink, setEditingFooterLink] = useState<TFooterLink | null>(null);
   const [footerLabel, setFooterLabel] = useState("");
   const [footerHref, setFooterHref] = useState("");
   const [deleteFooterTargetId, setDeleteFooterTargetId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (settings) {
-      setSiteTitle(settings.siteTitle || "");
-      setSeoTitle(settings.seoTitle || "");
-      setSeoDescription(settings.seoDescription || "");
-      setSeoKeywords(settings.seoKeywords || []);
-      setAccentColor(settings.accentColor || "#599692");
-      setBackgroundColor(settings.backgroundColor || "#11172a");
-      setNormalTextColor(settings.normalTextColor || "#626c7d");
-      setHighlightedTextColor(settings.highlightedTextColor || "#dfe5ec");
-    }
-  }, [settings]);
+  // Load the saved settings into the editable form whenever a new copy arrives.
+  // Adjusting state during render (instead of in an effect) avoids a second,
+  // cascading render pass: https://react.dev/learn/you-might-not-need-an-effect
+  const [loadedSettings, setLoadedSettings] = useState(settings);
+  if (settings && settings !== loadedSettings) {
+    setLoadedSettings(settings);
+    setSiteTitle(settings.siteTitle || "");
+    setSeoTitle(settings.seoTitle || "");
+    setSeoDescription(settings.seoDescription || "");
+    setSeoKeywords(settings.seoKeywords || []);
+    setAccentColor(settings.accentColor || "#599692");
+    setBackgroundColor(settings.backgroundColor || "#11172a");
+    setNormalTextColor(settings.normalTextColor || "#626c7d");
+    setHighlightedTextColor(settings.highlightedTextColor || "#dfe5ec");
+  }
 
   const updateSettingsMutation = useMutation({
     mutationFn: updateAdminSiteSettings,
@@ -104,7 +106,7 @@ export function SettingsManager() {
   });
 
   const updateFooterMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<TFooterLinkPayload> }) =>
       updateAdminFooterLink(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-footer-links"] });
@@ -176,12 +178,12 @@ export function SettingsManager() {
     }
   };
 
-  const handleToggleFooterStatus = async (link: any, newState: boolean) => {
+  const handleToggleFooterStatus = async (link: TFooterLink, newState: boolean) => {
     await updateAdminFooterLink(link.id, { isEnabled: newState });
     queryClient.invalidateQueries({ queryKey: ["admin-footer-links"] });
   };
 
-  const handleReorderFooter = (newItems: any[]) => {
+  const handleReorderFooter = (newItems: TFooterLink[]) => {
     queryClient.setQueryData(["admin-footer-links"], newItems);
     reorderFooterMutation.mutate(newItems.map((item, idx) => ({ id: item.id, order: idx + 1 })));
   };
@@ -224,18 +226,20 @@ export function SettingsManager() {
 
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-site pb-3">
-        {[
-          { id: "general", label: "General & Identity", icon: Globe },
-          { id: "seo", label: "SEO & Social Sharing", icon: Globe },
-          { id: "branding", label: "Theme Palette Tokens", icon: Palette },
-          { id: "footer", label: `Footer Links (${footerLinks.length})`, icon: LinkIcon }
-        ].map((tab) => {
+        {(
+          [
+            { id: "general", label: "General & Identity", icon: Globe },
+            { id: "seo", label: "SEO & Social Sharing", icon: Globe },
+            { id: "branding", label: "Theme Palette Tokens", icon: Palette },
+            { id: "footer", label: `Footer Links (${footerLinks.length})`, icon: LinkIcon }
+          ] satisfies { id: typeof activeTab; label: string; icon: typeof Globe }[]
+        ).map((tab) => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition ${
                 activeTab === tab.id
                   ? "bg-(--color-accent) text-white"

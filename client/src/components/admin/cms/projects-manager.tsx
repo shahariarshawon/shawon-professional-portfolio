@@ -7,14 +7,7 @@ import {
   Plus,
   Trash2,
   Edit2,
-  ExternalLink,
-  GitBranch,
   Star,
-  Image as ImageIcon,
-  CheckCircle2,
-  Layers,
-  AlertCircle,
-  FileCode2,
   Loader2,
   X,
   Save,
@@ -25,8 +18,11 @@ import {
   createAdminProject,
   updateAdminProject,
   deleteAdminProject,
-  reorderAdminProjects
+  reorderAdminProjects,
+  type TProjectPayload
 } from "@/lib/admin-api";
+
+type TProjectTab = "general" | "links" | "media" | "casestudy" | "features";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { SearchFilterBar } from "@/components/admin/cms/search-filter-bar";
 import { SortableList } from "@/components/admin/cms/sortable-list";
@@ -38,13 +34,9 @@ import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/shared/loading-state";
 import {
   TProject,
-  TProjectImage,
-  TProjectFeature,
-  TProjectChallenge,
-  TProjectImprovement,
-  TProjectResult,
-  TProjectArchitecture
+  TProjectImage
 } from "@/types/portfolio";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export function ProjectsManager() {
   const queryClient = useQueryClient();
@@ -60,9 +52,7 @@ export function ProjectsManager() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    "general" | "links" | "media" | "casestudy" | "features"
-  >("general");
+  const [activeTab, setActiveTab] = useState<TProjectTab>("general");
   const [editingProject, setEditingProject] = useState<TProject | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
@@ -171,7 +161,7 @@ export function ProjectsManager() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: Partial<TProject> }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: TProjectPayload }) =>
       updateAdminProject(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-projects"] });
@@ -214,7 +204,7 @@ export function ProjectsManager() {
     e.preventDefault();
     if (!name.trim()) return;
 
-    const payload: any = {
+    const payload: TProjectPayload = {
       name: name.trim(),
       slug: slug.trim() || undefined,
       shortDescription: shortDescription.trim(),
@@ -298,7 +288,7 @@ export function ProjectsManager() {
       })
       .sort((a, b) => {
         if (sortBy === "name") return a.name.localeCompare(b.name);
-        if (sortBy === "newest") return new Date((b as any).createdAt || 0).getTime() - new Date((a as any).createdAt || 0).getTime();
+        if (sortBy === "newest") return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
         return a.order - b.order;
       });
   }, [projects, searchQuery, statusFilter, sortBy]);
@@ -345,7 +335,7 @@ export function ProjectsManager() {
               <Card className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-(--color-accent)/40 transition">
                 <div className="flex items-start gap-4">
                   {thumbnail ? (
-                    <img
+                    <SafeImage
                       src={thumbnail}
                       alt={proj.name}
                       className="h-16 w-24 rounded-xl object-cover border border-site bg-card shrink-0"
@@ -474,17 +464,19 @@ export function ProjectsManager() {
 
             {/* Navigation Tabs */}
             <div className="flex items-center gap-2 border-b border-site pb-3 overflow-x-auto">
-              {[
-                { id: "general", label: "General & Story" },
-                { id: "links", label: "Links & Repos" },
-                { id: "media", label: `Media (${images.length})` },
-                { id: "casestudy", label: "Architecture & Results" },
-                { id: "features", label: `Features (${features.length})` }
-              ].map((tab) => (
+              {(
+                [
+                  { id: "general", label: "General & Story" },
+                  { id: "links", label: "Links & Repos" },
+                  { id: "media", label: `Media (${images.length})` },
+                  { id: "casestudy", label: "Architecture & Results" },
+                  { id: "features", label: `Features (${features.length})` }
+                ] satisfies { id: TProjectTab; label: string }[]
+              ).map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id)}
                   className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition ${
                     activeTab === tab.id
                       ? "bg-(--color-accent) text-white"
@@ -750,7 +742,7 @@ export function ProjectsManager() {
                           key={img.id || idx}
                           className="relative flex items-center gap-3 rounded-2xl border border-site bg-(--color-background)/40 p-2.5"
                         >
-                          <img
+                          <SafeImage
                             src={img.url}
                             alt={img.altText || ""}
                             className="h-16 w-24 object-cover rounded-xl border border-site shrink-0"

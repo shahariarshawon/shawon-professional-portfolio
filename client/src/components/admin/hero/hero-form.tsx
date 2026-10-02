@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ImageUp, Loader2, Plus, Save, Trash2, Upload } from "lucide-react";
 import { useRef } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { AdminCheckbox } from "@/components/admin/shared/admin-checkbox";
 import { AdminFormCard } from "@/components/admin/shared/admin-form-card";
@@ -19,6 +19,8 @@ import { THeroSection } from "@/types/portfolio";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getHeroFormDefaults } from "./hero-form-defaults";
 import { heroFormSchema, THeroFormValues } from "./hero-schema";
+import { SafeImage } from "@/components/ui/safe-image";
+import { resumeViewUrl } from "@/lib/cloudinary";
 
 type THeroFormProps = {
   hero: THeroSection | null | undefined;
@@ -39,12 +41,11 @@ export function HeroForm({ hero }: THeroFormProps) {
     handleSubmit,
     control,
     setValue,
-    watch,
     formState: { errors, isDirty },
   } = form;
 
-  const photoUrl = watch("photoUrl");
-  const resumeUrl = watch("resumeUrl");
+  const photoUrl = useWatch({ control, name: "photoUrl" });
+  const resumeUrl = useWatch({ control, name: "resumeUrl" });
 
   const badgeFields = useFieldArray({
     control,
@@ -205,7 +206,7 @@ export function HeroForm({ hero }: THeroFormProps) {
 
             <div className="mt-4 aspect-video overflow-hidden rounded-2xl border border-site bg-[var(--color-accent)]/10">
               {photoUrl ? (
-                <img
+                <SafeImage
                   src={photoUrl}
                   alt="Profile photo preview"
                   className="h-full w-full object-cover"
@@ -264,14 +265,21 @@ export function HeroForm({ hero }: THeroFormProps) {
               <p className="text-sm text-normal">Current resume URL:</p>
 
               {resumeUrl ? (
-                <a
-                  href={resumeUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-2 block break-all text-sm font-medium text-accent"
-                >
-                  {resumeUrl}
-                </a>
+                <>
+                  <p className="mt-2 break-all text-sm font-medium text-highlight">{resumeUrl}</p>
+                  <a
+                    href={resumeViewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-block text-sm font-medium text-accent hover:underline"
+                  >
+                    Preview the published resume
+                  </a>
+                  <p className="mt-1 text-xs text-normal">
+                    Visitors open the resume through the site, so it works even when the storage
+                    link is not directly public. Save changes to publish a new upload.
+                  </p>
+                </>
               ) : (
                 <p className="mt-2 text-sm text-normal">
                   No resume uploaded yet.

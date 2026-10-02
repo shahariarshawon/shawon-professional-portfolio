@@ -5,9 +5,11 @@ import { BriefcaseBusiness, MapPin } from "lucide-react";
 import { useRef } from "react";
 
 import { Reveal } from "@/components/motion/reveal";
+import { SectionEmpty } from "@/components/shared/section-empty";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Card } from "@/components/ui/card";
 import { IconTile } from "@/components/ui/icon-tile";
+import { SafeImage } from "@/components/ui/safe-image";
 import { Section } from "@/components/ui/section";
 import { TExperience } from "@/types/portfolio";
 
@@ -61,11 +63,11 @@ export function ExperienceSection({ experiences }: TExperienceSectionProps) {
                       <div className="flex gap-4">
                         <IconTile size="lg" className="overflow-hidden">
                           {experience.companyLogo ? (
-                            <img
+                            <SafeImage
                               src={experience.companyLogo}
                               alt={`${experience.companyName} logo`}
-                              loading="lazy"
-                              decoding="async"
+                              maxWidth={128}
+                              fallback={<BriefcaseBusiness size={22} />}
                               className="h-full w-full object-cover"
                             />
                           ) : (
@@ -135,9 +137,13 @@ export function ExperienceSection({ experiences }: TExperienceSectionProps) {
           })}
         </ol>
       ) : (
-        <Card variant="glass" className="mt-14 p-10 text-center">
-          <p className="text-fg">Experience details are on their way.</p>
-        </Card>
+        <SectionEmpty
+          className="mt-14"
+          icon={BriefcaseBusiness}
+          title="No work history published"
+          description="My professional timeline isn't listed here right now. The case studies show what I build, and I'm happy to walk through my background directly."
+          action={{ label: "Get in touch", href: "#contact" }}
+        />
       )}
     </Section>
   );

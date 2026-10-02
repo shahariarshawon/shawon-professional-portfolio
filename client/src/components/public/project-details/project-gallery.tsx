@@ -1,49 +1,48 @@
 "use client";
 
-import { ImageIcon } from "lucide-react";
 import { useState } from "react";
 
+import { ProjectCover } from "@/components/public/projects/project-cover";
 import { Card } from "@/components/ui/card";
+import { SafeImage } from "@/components/ui/safe-image";
 import { cn } from "@/lib/utils";
 import { TProjectImage } from "@/types/portfolio";
 
 type TProjectGalleryProps = {
   images: TProjectImage[];
   projectName: string;
+  techStack?: string[];
 };
 
-export function ProjectGallery({ images, projectName }: TProjectGalleryProps) {
-  const [activeImage, setActiveImage] = useState(images[0] || null);
+export function ProjectGallery({ images, projectName, techStack = [] }: TProjectGalleryProps) {
+  const [activeImageId, setActiveImageId] = useState(images[0]?.id ?? null);
 
+  const cover = (
+    <ProjectCover name={projectName} techStack={techStack} seed={projectName.length} className="min-h-full" />
+  );
+
+  // No screenshots yet: show a designed cover rather than an apology.
   if (!images.length) {
     return (
       <Card className="overflow-hidden">
-        <div className="flex aspect-video items-center justify-center bg-(--color-accent)/10 p-8 text-center">
-          <div>
-            <ImageIcon className="mx-auto text-accent" size={42} />
-            <p className="mt-4 text-lg font-semibold text-highlight">
-              Project Preview Coming Soon
-            </p>
-            <p className="mt-2 text-sm text-normal">
-              Upload project screenshots from the admin dashboard.
-            </p>
-          </div>
-        </div>
+        <div className="aspect-video">{cover}</div>
       </Card>
     );
   }
 
-  const previewImage = activeImage || images[0];
+  const previewImage = images.find((image) => image.id === activeImageId) ?? images[0];
 
   return (
     <div className="space-y-4">
       <Card className="overflow-hidden">
         <div className="aspect-video bg-(--color-accent)/10">
-          <img
+          <SafeImage
+            key={previewImage.id}
             src={previewImage.url}
             alt={previewImage.altText || projectName}
             loading="eager"
-            decoding="async"
+            maxWidth={1600}
+            fallback={cover}
             className="h-full w-full object-cover"
           />
         </div>
@@ -58,7 +57,8 @@ export function ProjectGallery({ images, projectName }: TProjectGalleryProps) {
               <button
                 key={image.id}
                 type="button"
-                onClick={() => setActiveImage(image)}
+                onClick={() => setActiveImageId(image.id)}
+                aria-pressed={isActive}
                 className={cn(
                   "overflow-hidden rounded-2xl border bg-card transition",
                   isActive
@@ -70,11 +70,10 @@ export function ProjectGallery({ images, projectName }: TProjectGalleryProps) {
                   Show {image.altText || projectName}
                 </span>
 
-                <img
+                <SafeImage
                   src={image.url}
                   alt={image.altText || projectName}
-                  loading="lazy"
-                  decoding="async"
+                  maxWidth={480}
                   className="aspect-video h-full w-full object-cover"
                 />
               </button>

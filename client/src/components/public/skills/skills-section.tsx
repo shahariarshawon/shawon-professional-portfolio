@@ -12,9 +12,11 @@ import {
 } from "lucide-react";
 
 import { RevealGroup, RevealItem } from "@/components/motion/reveal";
+import { SectionEmpty } from "@/components/shared/section-empty";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { IconTile } from "@/components/ui/icon-tile";
 import { Marquee } from "@/components/ui/marquee";
+import { SafeImage } from "@/components/ui/safe-image";
 import { Section } from "@/components/ui/section";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { cn } from "@/lib/utils";
@@ -70,6 +72,17 @@ export function SkillsSection({ skills }: TSkillsSectionProps) {
         </div>
       ) : null}
 
+      {categories.length === 0 ? (
+        <div className="container-custom mt-14">
+          <SectionEmpty
+            icon={Wrench}
+            title="No skills published"
+            description="My technology stack isn't listed here right now. The projects section shows the tools I use in practice."
+            action={{ label: "View projects", href: "#projects" }}
+          />
+        </div>
+      ) : null}
+
       <div className="container-custom">
         <RevealGroup className="mt-10 grid grid-flow-row-dense gap-5 md:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => {
@@ -98,7 +111,7 @@ export function SkillsSection({ skills }: TSkillsSectionProps) {
                         className="group/skill inline-flex items-center gap-2 rounded-full border border-line bg-glass px-3.5 py-1.5 text-sm text-fg transition-colors duration-300 hover:border-[var(--color-accent-bright)]/50"
                       >
                         {skill.iconUrl ? (
-                          <img src={skill.iconUrl} alt="" loading="lazy" className="h-4 w-4 object-contain" />
+                          <SafeImage src={skill.iconUrl} alt="" maxWidth={48} fallback={null} className="h-4 w-4 object-contain" />
                         ) : null}
                         {skill.name}
                         {typeof skill.level === "number" ? (

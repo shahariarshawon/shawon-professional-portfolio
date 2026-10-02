@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, Plus, Filter, ArrowUpDown, X } from "lucide-react";
+import { Search, Plus, ArrowUpDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type SearchFilterBarProps = {

@@ -6,15 +6,30 @@ import { Magnetic } from "@/components/motion/magnetic";
 import { Reveal } from "@/components/motion/reveal";
 import { SocialLink } from "@/components/ui/social-link";
 import { siteConfig } from "@/constants/site";
-import { TFooter } from "@/types/portfolio";
+import { TFooter, TNavbarItem } from "@/types/portfolio";
 
 type TFooterProps = {
-  footer: TFooter;
+  /** Omitted when the API is unreachable; the footer then uses defaults. */
+  footer?: TFooter | null;
 };
+
+const DEFAULT_LINKS: TNavbarItem[] = [
+  ["about", "About"],
+  ["experience", "Experience"],
+  ["projects", "Projects"],
+  ["contact", "Contact"]
+].map(([id, label], index) => ({
+  id,
+  label,
+  href: `#${id}`,
+  order: index + 1,
+  isEnabled: true
+}));
 
 export function Footer({ footer }: TFooterProps) {
   const name = footer?.name || siteConfig.name;
   const year = new Date().getFullYear();
+  const quickLinks = footer?.quickLinks?.length ? footer.quickLinks : DEFAULT_LINKS;
 
   return (
     <footer className="noise relative isolate overflow-hidden border-t border-line bg-surface pt-20 sm:pt-28">
@@ -57,7 +72,7 @@ export function Footer({ footer }: TFooterProps) {
           <nav aria-label="Footer" className="md:col-span-3">
             <p className="text-eyebrow text-muted">Navigate</p>
             <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 md:grid-cols-1">
-              {(footer?.quickLinks || []).map((link) => (
+              {quickLinks.map((link) => (
                 <li key={link.id}>
                   <Link
                     href={link.href.startsWith("#") ? `/${link.href}` : link.href}

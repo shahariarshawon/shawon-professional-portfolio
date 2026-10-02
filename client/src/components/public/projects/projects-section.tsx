@@ -1,4 +1,4 @@
-import { ArrowUpRight, ExternalLink } from "lucide-react";
+import { ArrowUpRight, ExternalLink, FolderGit2 } from "lucide-react";
 import Link from "next/link";
 import { FaGithub } from "react-icons/fa";
 
@@ -6,9 +6,9 @@ import { ImageReveal } from "@/components/motion/image-reveal";
 import { RevealGroup, RevealItem } from "@/components/motion/reveal";
 import { Tilt } from "@/components/motion/tilt";
 import { ProjectCover } from "@/components/public/projects/project-cover";
+import { SectionEmpty } from "@/components/shared/section-empty";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { Section } from "@/components/ui/section";
 import { cn } from "@/lib/utils";
 import { TProject } from "@/types/portfolio";
@@ -61,9 +61,13 @@ export function ProjectsSection({ projects }: TProjectsSectionProps) {
           ))}
         </RevealGroup>
       ) : (
-        <Card variant="glass" className="mt-14 p-10 text-center">
-          <p className="text-fg">New case studies are being written — check back soon.</p>
-        </Card>
+        <SectionEmpty
+          className="mt-14"
+          icon={FolderGit2}
+          title="No projects published"
+          description="There are no public case studies to show at the moment. If you'd like examples of my work, reach out and I'll share relevant projects."
+          action={{ label: "Request examples", href: "#contact" }}
+        />
       )}
     </Section>
   );
@@ -99,7 +103,13 @@ function ProjectCard({ project, index, total, featured, highlighted }: TProjectC
         >
           {image?.url ? (
             <div className="h-full w-full transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]">
-              <ImageReveal src={image.url} alt={image.altText || project.name} className="h-full w-full" />
+              <ImageReveal
+                src={image.url}
+                alt={image.altText || project.name}
+                maxWidth={featured ? 1100 : 800}
+                fallback={<ProjectCover name={project.name} techStack={project.techStack} seed={index} />}
+                className="h-full w-full"
+              />
             </div>
           ) : (
             <ProjectCover name={project.name} techStack={project.techStack} seed={index} />

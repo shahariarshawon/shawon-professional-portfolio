@@ -23,8 +23,9 @@ type TIntroLoaderProps = {
 /**
  * Cinematic first-visit intro: the brand mark draws itself over a particle
  * constellation while a progress counter runs, then the panel lifts away to
- * reveal the homepage. Plays once per browser session; click or press Escape
- * to skip. The server renders it visible; <IntroGate> hides it before paint
+ * reveal the homepage. Kept short (~1.5s end to end) because the page is
+ * already rendered underneath; plays once per browser session; click or press
+ * Escape to skip. The server renders it visible; <IntroGate> hides it before paint
  * when it has already played.
  */
 export function IntroLoader({ name, tagline }: TIntroLoaderProps) {
@@ -54,9 +55,9 @@ export function IntroLoader({ name, tagline }: TIntroLoaderProps) {
     root.style.overflow = "hidden";
 
     const controls = animate(progress, 100, {
-      duration: prefersReducedMotion ? 0.5 : 1.9,
+      duration: prefersReducedMotion ? 0.3 : 0.8,
       ease: ease.inOut,
-      onComplete: () => window.setTimeout(finish, prefersReducedMotion ? 0 : 250)
+      onComplete: () => window.setTimeout(finish, prefersReducedMotion ? 0 : 60)
     });
 
     const handleKey = (event: KeyboardEvent) => {
@@ -88,7 +89,7 @@ export function IntroLoader({ name, tagline }: TIntroLoaderProps) {
           exit={
             prefersReducedMotion
               ? { opacity: 0, transition: { duration: 0.3 } }
-              : { y: "-100%", transition: { duration: 0.95, ease: ease.inOut, delay: 0.15 } }
+              : { y: "-100%", transition: { duration: 0.6, ease: ease.inOut, delay: 0.05 } }
           }
         >
           {/* Ambient glow */}
@@ -101,7 +102,7 @@ export function IntroLoader({ name, tagline }: TIntroLoaderProps) {
             aria-hidden="true"
             className="absolute inset-0"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { duration: 1.2 } }}
+            animate={{ opacity: 1, transition: { duration: 0.6 } }}
           >
             <ParticleField density={0.5} />
           </motion.div>
@@ -116,7 +117,7 @@ export function IntroLoader({ name, tagline }: TIntroLoaderProps) {
               <motion.p
                 className="font-display text-2xl font-semibold tracking-tight text-fg sm:text-3xl"
                 initial={{ y: "110%" }}
-                animate={{ y: "0%", transition: { duration: 0.9, ease: ease.out, delay: 0.5 } }}
+                animate={{ y: "0%", transition: { duration: 0.6, ease: ease.out, delay: 0.25 } }}
               >
                 {name}
               </motion.p>
@@ -125,7 +126,7 @@ export function IntroLoader({ name, tagline }: TIntroLoaderProps) {
             <motion.p
               className="mt-3 text-eyebrow text-muted"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { duration: 0.8, delay: 0.8 } }}
+              animate={{ opacity: 1, transition: { duration: 0.5, delay: 0.4 } }}
             >
               {tagline}
             </motion.p>

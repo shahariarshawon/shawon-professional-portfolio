@@ -8,11 +8,14 @@ import {
   Trash2,
   Edit2,
   FolderPlus,
-  Folder,
   Loader2,
   X,
   Save,
-  Layers
+  Layers,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import {
   getAdminSkillCategories,
@@ -36,6 +39,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/shared/loading-state";
 import { TSkill, TSkillCategory } from "@/types/portfolio";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export function SkillsManager() {
   const queryClient = useQueryClient();
@@ -173,7 +177,7 @@ export function SkillsManager() {
     setSkillName(skill.name);
     setSkillIconUrl(skill.iconUrl || "");
     setSkillLevel(skill.level || 90);
-    setSkillCategoryId((skill as any).categoryId || (skill as any).category?.id || categories[0]?.id || "");
+    setSkillCategoryId(skill.categoryId || skill.category?.id || categories[0]?.id || "");
     setIsSkillModalOpen(true);
   };
 
@@ -192,7 +196,7 @@ export function SkillsManager() {
     e.preventDefault();
     if (!skillName.trim() || !skillCategoryId) return;
 
-    const payload: any = {
+    const payload: Partial<TSkill> = {
       name: skillName.trim(),
       iconUrl: skillIconUrl.trim() || null,
       level: Number(skillLevel) || null,
@@ -221,6 +225,15 @@ export function SkillsManager() {
     reorderCategoriesMutation.mutate(newCategories.map((c, i) => ({ id: c.id, order: i + 1 })));
   };
 
+  const handleMoveCategory = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= categories.length) return;
+
+    const next = [...categories];
+    [next[index], next[target]] = [next[target], next[index]];
+    handleReorderCategories(next);
+  };
+
   const handleReorderSkills = (newSkills: TSkill[]) => {
     queryClient.setQueryData(["admin-skills"], newSkills);
     reorderSkillsMutation.mutate(newSkills.map((s, i) => ({ id: s.id, order: i + 1 })));
@@ -229,7 +242,7 @@ export function SkillsManager() {
   // Filter skills
   const filteredSkills = useMemo(() => {
     return allSkills.filter((skill) => {
-      const catId = (skill as any).categoryId || (skill as any).category?.id;
+      const catId = skill.categoryId || skill.category?.id;
       const matchesCategory = selectedCategoryId === "ALL" || catId === selectedCategoryId;
       const matchesSearch = skill.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus =
@@ -302,21 +315,54 @@ export function SkillsManager() {
             All Categories ({allSkills.length})
           </button>
 
-          {categories.map((cat) => (
+          {categories.map((cat, index) => (
             <div
               key={cat.id}
               className={`group flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-semibold border transition ${
                 selectedCategoryId === cat.id
                   ? "border-(--color-accent) bg-(--color-accent)/10 text-accent"
                   : "border-site bg-card text-normal hover:border-(--color-accent)/40 hover:text-highlight"
-              }`}
+              } ${cat.isEnabled ? "" : "opacity-60"}`}
             >
+              <button
+                type="button"
+                onClick={() => handleMoveCategory(index, -1)}
+                disabled={index === 0}
+                className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-0.5 text-normal hover:text-highlight disabled:hidden transition"
+                title="Move earlier"
+                aria-label={`Move ${cat.name} earlier`}
+              >
+                <ChevronLeft size={12} />
+              </button>
+
               <button
                 type="button"
                 onClick={() => setSelectedCategoryId(cat.id)}
                 className="cursor-pointer"
               >
                 {cat.name} ({cat.skills?.length || 0})
+                {cat.isEnabled ? "" : " · hidden"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleMoveCategory(index, 1)}
+                disabled={index === categories.length - 1}
+                className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-0.5 text-normal hover:text-highlight disabled:hidden transition"
+                title="Move later"
+                aria-label={`Move ${cat.name} later`}
+              >
+                <ChevronRight size={12} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleToggleCategoryStatus(cat, !cat.isEnabled)}
+                className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-0.5 text-normal hover:text-highlight transition"
+                title={cat.isEnabled ? "Hide from the public site" : "Show on the public site"}
+                aria-label={cat.isEnabled ? `Hide ${cat.name}` : `Show ${cat.name}`}
+              >
+                {cat.isEnabled ? <Eye size={12} /> : <EyeOff size={12} />}
               </button>
 
               <button
@@ -364,15 +410,15 @@ export function SkillsManager() {
           onReorder={handleReorderSkills}
           renderItem={(skill) => {
             const categoryName =
-              (skill as any).category?.name ||
-              categories.find((c) => c.id === (skill as any).categoryId)?.name ||
+              skill.category?.name ||
+              categories.find((c) => c.id === skill.categoryId)?.name ||
               "Uncategorized";
 
             return (
               <Card className="p-4 flex items-center justify-between gap-4 hover:border-(--color-accent)/40 transition">
                 <div className="flex items-center gap-3 min-w-0">
                   {skill.iconUrl ? (
-                    <img
+                    <SafeImage
                       src={skill.iconUrl}
                       alt={skill.name}
                       className="h-9 w-9 rounded-lg object-contain border border-site p-1 bg-card shrink-0"

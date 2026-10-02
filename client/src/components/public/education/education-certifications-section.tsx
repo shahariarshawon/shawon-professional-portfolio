@@ -5,6 +5,7 @@ import { ArrowUpRight, Award, GraduationCap } from "lucide-react";
 import { useState } from "react";
 
 import { Reveal } from "@/components/motion/reveal";
+import { SectionEmpty } from "@/components/shared/section-empty";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Card } from "@/components/ui/card";
 import { IconTile } from "@/components/ui/icon-tile";
@@ -123,7 +124,12 @@ export function EducationCertificationsSection({
                   </Card>
                 ))
               ) : (
-                <EmptyPanel text="Education details coming soon." />
+                <SectionEmpty
+                  icon={GraduationCap}
+                  title="No education listed"
+                  description="Formal education details aren't published on this page. Feel free to ask and I'll share them."
+                  action={{ label: "Get in touch", href: "#contact" }}
+                />
               )}
             </motion.div>
           ) : (
@@ -174,7 +180,12 @@ export function EducationCertificationsSection({
                 })
               ) : (
                 <div className="md:col-span-2">
-                  <EmptyPanel text="Certifications will be listed here soon." />
+                  <SectionEmpty
+                    icon={Award}
+                    title="No certifications listed"
+                    description="There are no certifications to display right now. My project work is the best record of what I can do."
+                    action={{ label: "View projects", href: "#projects" }}
+                  />
                 </div>
               )}
             </motion.div>
@@ -182,16 +193,5 @@ export function EducationCertificationsSection({
         </AnimatePresence>
       </div>
     </Section>
-  );
-}
-
-function EmptyPanel({ text }: { text: string }) {
-  return (
-    <Card variant="glass" className="flex flex-col items-center justify-center gap-4 border-dashed p-12 text-center">
-      <IconTile tone="glass">
-        <Award size={20} />
-      </IconTile>
-      <p className="text-sm text-muted">{text}</p>
-    </Card>
   );
 }

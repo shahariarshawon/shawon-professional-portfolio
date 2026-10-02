@@ -15,6 +15,7 @@ import {
 import { GradientMesh } from "@/components/effects/gradient-mesh";
 import { Magnetic } from "@/components/motion/magnetic";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/reveal";
+import { SectionEmpty } from "@/components/shared/section-empty";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { buttonVariants } from "@/components/ui/button";
 import { IconTile } from "@/components/ui/icon-tile";
@@ -50,6 +51,16 @@ export function ServicesSection({ services }: TServicesSectionProps) {
         highlight="help."
         description="Backend-focused engineering support — from API and database design to debugging and complete full-stack builds."
       />
+
+      {services.length === 0 ? (
+        <SectionEmpty
+          className="mt-14"
+          icon={Server}
+          title="No services listed"
+          description="I'm open to backend, API and full-stack engagements. Tell me what you need and I'll outline how I can help."
+          action={{ label: "Start a conversation", href: "#contact" }}
+        />
+      ) : null}
 
       <RevealGroup className="mt-14 grid gap-5 md:grid-cols-2 lg:mt-16 lg:grid-cols-3" stagger={0.07}>
         {services.map((service, index) => {

@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import Image from "next/image";
-import { Upload, X, Loader2, Image as ImageIcon, Link as LinkIcon, FileText } from "lucide-react";
+import { Upload, X, Loader2, Link as LinkIcon, FileText } from "lucide-react";
 import { uploadSingleImage, uploadSingleFile, TUploadFolder } from "@/lib/upload-api";
+import { SafeImage } from "@/components/ui/safe-image";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 type MediaUploaderProps = {
   value?: string | null;
@@ -45,9 +46,9 @@ export function MediaUploader({
       if (result?.secureUrl || result?.url) {
         onChange(result.secureUrl || result.url);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Upload error", err);
-      setErrorMessage(err?.response?.data?.message || "Failed to upload file");
+      setErrorMessage(getErrorMessage(err) || "Failed to upload file");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -105,7 +106,7 @@ export function MediaUploader({
             {isPdf || value.endsWith(".pdf") ? (
               <FileText size={28} className="text-accent" />
             ) : (
-              <img
+              <SafeImage
                 src={value}
                 alt="Preview"
                 className="h-full w-full object-cover"

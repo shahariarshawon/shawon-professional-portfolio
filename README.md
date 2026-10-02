@@ -69,33 +69,38 @@ pnpm run dev
 ## Environment Variables
 
 ### Backend (`server/.env.example`)
-- `NODE_ENV`: Application environment (`development` | `production`)
-- `PORT`: Server port (e.g., `5000`)
-- `DATABASE_URL`: Connection string for PostgreSQL
-- `REDIS_URL`: Unified Redis connection string for caching and queues.
-- `JWT_SECRET`: Used to sign Admin JWT tokens.
-- `CLIENT_URL`: URL of the deployed frontend for CORS.
-- `GEMINI_API_KEY`: API Key for AI Agents (Google GenAI).
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `DATABASE_URL` | yes | PostgreSQL connection string (needs the `pgvector` extension). |
+| `JWT_SECRET` | yes (production) | Long random string. The server refuses to start in production with the dev default. Render generates one via `render.yaml`. |
+| `CLIENT_URL` | yes | Your Vercel URL, no trailing slash. Comma-separate several origins (production + preview). |
+| `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | yes | Image and resume storage. Without them uploads return a clear 503 and the resume endpoint redirects. |
+| `REDIS_URL` | optional | Queues and caching. |
+| `GEMINI_API_KEY` | optional | AI features. |
+| `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_TO` | optional | Contact-form email. |
+| `PORT`, `NODE_ENV`, `JWT_EXPIRES_IN`, `AUTH_COOKIE_*` | optional | Defaults are fine. |
 
 ### Frontend (`client/.env.example`)
-- `NEXT_PUBLIC_API_URL`: The URL to the Express backend (e.g., `https://your-backend.onrender.com/api`).
+- `NEXT_PUBLIC_API_URL`: the Express API **including `/api`** (e.g. `https://your-backend.onrender.com/api`).
+- `NEXT_PUBLIC_SITE_URL`: the public site URL, used for canonical URLs, sitemap and social cards. Falls back to Vercel's production URL if unset.
 
 ---
 
 ## Deployment Guide
 
-### Deploy Frontend on Vercel
-1. Connect your GitHub repository to Vercel.
-2. Select the `client` root directory.
-3. Add the required Environment Variable (`NEXT_PUBLIC_API_URL`).
-4. Vercel automatically runs `npm run build` and deploys your Next.js app.
+### Backend on Render
+1. Push the repo to GitHub (this includes `server/prisma/migrations/`; they must be committed).
+2. In Render choose **New > Blueprint** and select the repo. `render.yaml` (repo root) configures the service: root directory `server`, health check `/healthz`, an auto-generated `JWT_SECRET`.
+3. Fill the variables marked `sync: false` (`DATABASE_URL`, `CLIENT_URL`, Cloudinary keys, ...).
+4. The build runs `pnpm install`, `prisma generate`, `tsc` and `prisma migrate deploy`.
 
-### Deploy Backend on Render
-1. Create a new "Web Service" on Render.
-2. Connect your GitHub repository and set the root directory to `server`.
-3. Render will auto-detect the `render.yaml` configuration.
-4. Add all production Environment Variables (`DATABASE_URL`, `GEMINI_API_KEY`, `JWT_SECRET`, `CLIENT_URL`, etc.).
-5. Render runs `pnpm install && pnpm build`, migrating your Prisma database implicitly via scripts.
+### Frontend on Vercel
+1. Import the repo and set **Root Directory** to `client`. Leave build/install commands on auto-detect (pnpm is picked up from the lockfile).
+2. Set `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_SITE_URL`.
+3. Deploy. Pages are statically generated and refreshed in the background every 60 seconds, so content edited in the admin dashboard shows up within about a minute.
+
+### Resume PDF
+The public site links to `GET /api/public/resume` (view) and `GET /api/public/resume?download=1` (download). The API fetches the PDF from Cloudinary with a signed request and serves it with the right headers, so it works even if Cloudinary refuses unauthenticated delivery. New PDFs are uploaded as `raw` resources. Upload the PDF from **Admin > Hero**, then save.
 
 ---
 
@@ -120,5 +125,7 @@ pnpm run dev
 
 - **CORS Error**: Ensure `CLIENT_URL` exactly matches your Vercel URL without a trailing slash.
 - **Database Connection**: Ensure `pgvector` extension is enabled on your PostgreSQL host (e.g. Supabase, Neon).
-- **Cookie Auth Issue**: Safari limits cross-site cookies. Ensure your Vercel Frontend and Render Backend use the same top-level domain if strict restrictions apply.
+- **Cookie Auth Issue**: Safari blocks cross-site cookies, so admin login on `*.vercel.app` + `*.onrender.com` can fail there. Put both under one registrable domain (for example `shawon.dev` and `api.shawon.dev`) for reliable Safari/iOS admin login. The public site is unaffected.
+- **Slow first request**: Render's free tier sleeps after inactivity. The public pages are cached, so visitors are not affected; the admin dashboard may take ~30s to wake the API.
+- **Favicon didn't change**: icons are served with a content-hash query string, so a hard refresh (Ctrl+Shift+R) or reopening the tab is enough.
 - **AI Queue Failure**: Ensure Redis is active via `REDIS_URL` for `BullMQ` to process offline jobs.

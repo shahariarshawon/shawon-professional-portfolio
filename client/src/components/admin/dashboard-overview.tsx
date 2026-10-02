@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   BriefcaseBusiness,
-  FileText,
   Inbox,
   Layers3,
   MessageSquareText,
@@ -16,8 +15,7 @@ import {
   ArrowRight,
   Clock,
   CheckCircle2,
-  ExternalLink,
-  Plus
+  ExternalLink
 } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminStatCard } from "@/components/admin/admin-stat-card";
@@ -25,6 +23,7 @@ import { LoadingState } from "@/components/shared/loading-state";
 import { Card } from "@/components/ui/card";
 import { getDashboardOverview } from "@/lib/admin-api";
 import { useQuery } from "@tanstack/react-query";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export function DashboardOverview() {
   const { data, isLoading, isError } = useQuery({
@@ -273,7 +272,7 @@ export function DashboardOverview() {
               >
                 <div>
                   {proj.images?.[0]?.url && (
-                    <img
+                    <SafeImage
                       src={proj.images[0].url}
                       alt={proj.name}
                       className="h-24 w-full object-cover rounded-xl border border-site mb-2"

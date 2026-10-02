@@ -1,19 +1,25 @@
+# Render Blueprint (must live at the repo root). Deploys the Express API from /server.
 services:
   - type: web
     name: shawon-portfolio-backend
-    env: node
-    buildCommand: pnpm install && pnpm run build
+    runtime: node
+    rootDir: server
+    buildCommand: pnpm install --frozen-lockfile --filter shawon-portfolio-server... && pnpm run build
     startCommand: pnpm start
-    healthCheckPath: /
+    healthCheckPath: /healthz
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: 20
       - key: DATABASE_URL
         sync: false
+      # Generated once by Render; no manual step needed.
       - key: JWT_SECRET
-        sync: false
+        generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
+      # Your Vercel URL(s), comma-separated, no trailing slash.
       - key: CLIENT_URL
         sync: false
       - key: CLOUDINARY_CLOUD_NAME

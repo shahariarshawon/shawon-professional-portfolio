@@ -4,7 +4,11 @@ export const siteConfig = {
   title: "AL Shahariar Arafat Shawon | Backend Developer",
   description:
     "Professional backend-focused developer portfolio of AL Shahariar Arafat Shawon. Skilled in Node.js, Express.js, TypeScript, PostgreSQL, Prisma, MongoDB, Next.js, REST API development, authentication, and full-stack web applications.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  url:
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "http://localhost:3000"),
   apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
   email: "shahariarshawon.dev@gmail.com",
   /** Short line under the brand mark in the intro loader. */

@@ -94,6 +94,7 @@ export function AboutSection({ about }: TAboutSectionProps) {
                 <ImageReveal
                   src={about.imageUrl}
                   alt="About portrait"
+                  maxWidth={900}
                   className="aspect-[4/3] rounded-[1.25rem]"
                 />
               </div>

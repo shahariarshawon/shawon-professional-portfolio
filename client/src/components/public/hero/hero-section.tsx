@@ -8,7 +8,7 @@ import {
   useTransform,
   type MotionValue
 } from "framer-motion";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, Download, FileText } from "lucide-react";
 
 import { GradientMesh } from "@/components/effects/gradient-mesh";
 import { ImageReveal } from "@/components/motion/image-reveal";
@@ -21,6 +21,7 @@ import { SocialLink } from "@/components/ui/social-link";
 import { siteConfig } from "@/constants/site";
 import { useFinePointer } from "@/hooks/use-fine-pointer";
 import { useIntroComplete } from "@/hooks/use-intro-complete";
+import { resumeDownloadUrl, resumeViewUrl } from "@/lib/cloudinary";
 import { ease, spring } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { THeroSection } from "@/types/portfolio";
@@ -60,10 +61,8 @@ export function HeroSection({ hero }: THeroSectionProps) {
   const stack = hero?.techHighlights?.length
     ? hero.techHighlights.map((tech) => tech.name)
     : FALLBACK_STACK;
-  const resumeHref =
-    hero?.resumeUrl && (hero.isViewResumeEnabled || hero.isDownloadResumeEnabled)
-      ? hero.resumeUrl
-      : null;
+  const canViewResume = Boolean(hero?.resumeUrl && hero.isViewResumeEnabled);
+  const canDownloadResume = Boolean(hero?.resumeUrl && hero.isDownloadResumeEnabled);
   const showContactCta = hero?.isGetInTouchEnabled ?? true;
 
   /* Pointer tracking — motion values only, no React re-renders. */
@@ -200,18 +199,33 @@ export function HeroSection({ hero }: THeroSectionProps) {
               </Magnetic>
             ) : null}
 
-            {resumeHref ? (
-              <a
-                href={resumeHref}
-                target="_blank"
-                rel="noreferrer"
-                className={cn(buttonVariants({ variant: "link" }), "group ml-1 gap-1.5 text-sm")}
-              >
-                Résumé
-                <ArrowUpRight size={16} className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </a>
-            ) : null}
           </motion.div>
+
+          {canViewResume || canDownloadResume ? (
+            <motion.div variants={item} data-reveal="" className="mt-4 flex flex-wrap items-center gap-3">
+              {canViewResume ? (
+                <a
+                  href={resumeViewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(buttonVariants({ variant: "outline", size: "md" }), "gap-2")}
+                >
+                  <FileText size={16} />
+                  View Resume
+                </a>
+              ) : null}
+              {canDownloadResume ? (
+                <a
+                  href={resumeDownloadUrl}
+                  download
+                  className={cn(buttonVariants({ variant: "outline", size: "md" }), "gap-2")}
+                >
+                  <Download size={16} />
+                  Download Resume
+                </a>
+              ) : null}
+            </motion.div>
+          ) : null}
 
           {hero?.socialLinks?.length ? (
             <motion.div variants={item} data-reveal="" className="mt-12 flex items-center gap-4">
@@ -258,15 +272,13 @@ export function HeroSection({ hero }: THeroSectionProps) {
                     play={introDone}
                     delay={0.6}
                     loading="eager"
+                    maxWidth={900}
+                    fallback={<HeroInitials name={name} />}
                     className="h-full w-full"
                     imgClassName="object-top"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_30%_20%,var(--glow-1),transparent_60%),radial-gradient(circle_at_80%_80%,var(--glow-2),transparent_60%)]">
-                    <span className="font-display text-7xl font-semibold text-gradient">
-                      {getInitials(name)}
-                    </span>
-                  </div>
+                  <HeroInitials name={name} />
                 )}
 
               </div>
@@ -351,6 +363,14 @@ const CHIP_POSITIONS: React.CSSProperties[] = [
   { left: "44%", top: "14%" },
   { left: "53%", bottom: "14%" }
 ];
+
+function HeroInitials({ name }: { name: string }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_30%_20%,var(--glow-1),transparent_60%),radial-gradient(circle_at_80%_80%,var(--glow-2),transparent_60%)]">
+      <span className="font-display text-7xl font-semibold text-gradient">{getInitials(name)}</span>
+    </div>
+  );
+}
 
 function getInitials(name: string) {
   const parts = name.split(/\s+/).filter(Boolean);

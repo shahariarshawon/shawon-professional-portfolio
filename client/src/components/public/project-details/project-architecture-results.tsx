@@ -1,6 +1,6 @@
-import React from "react";
-import { GitBranch, Layers, TrendingUp, CheckCircle2, ZoomIn } from "lucide-react";
+import { Layers } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { SafeImage } from "@/components/ui/safe-image";
 import { TProject } from "@/types/portfolio";
 
 type TProjectArchitectureResultsProps = {
@@ -36,7 +36,7 @@ export function ProjectArchitectureResults({ project }: TProjectArchitectureResu
             {project.architectureDiagram && (
               <Card className="p-4 md:p-6 overflow-hidden border-site bg-(--color-background)/40 group">
                 <div className="relative rounded-2xl overflow-hidden border border-site/60 bg-black/20 flex items-center justify-center">
-                  <img
+                  <SafeImage
                     src={project.architectureDiagram}
                     alt={`${project.name} Architecture Diagram`}
                     className="w-full max-h-[550px] object-contain transition duration-300 group-hover:scale-[1.01]"
@@ -55,7 +55,7 @@ export function ProjectArchitectureResults({ project }: TProjectArchitectureResu
                     </h3>
                     <p className="text-sm leading-6 text-normal">{arch.description}</p>
                     {arch.diagramUrl && (
-                      <img
+                      <SafeImage
                         src={arch.diagramUrl}
                         alt={arch.title}
                         className="mt-3 rounded-xl border border-site object-contain max-h-48 w-full"

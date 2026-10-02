@@ -25,8 +25,7 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Prisma
-server/prisma/migrations/
+# Prisma (migrations are source: `prisma migrate deploy` applies them on deploy)
 node_modules/
 .next/
 dist/

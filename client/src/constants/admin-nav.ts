@@ -1,7 +1,6 @@
 import {
   Award,
   BriefcaseBusiness,
-  FileText,
   GraduationCap,
   Home,
   Inbox,

@@ -3,6 +3,7 @@ import AppError from "../../errors/AppError";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { PublicService } from "./public.service";
+import { ResumeService } from "./resume.service";
 
 const getNavbar = catchAsync(async (_req: Request, res: Response) => {
   const result = await PublicService.getNavbar();
@@ -166,6 +167,30 @@ const getFullPortfolio = catchAsync(async (_req: Request, res: Response) => {
   });
 });
 
+/**
+ * Serves the resume PDF through the API so it opens in the browser's PDF
+ * viewer (inline) or downloads (?download=1) regardless of how Cloudinary
+ * restricts direct delivery of the stored asset.
+ */
+const getResume = catchAsync(async (req: Request, res: Response) => {
+  const isDownload = req.query.download === "1" || req.query.download === "true";
+  const resume = await ResumeService.getResume(isDownload ? "download" : "view");
+
+  if (resume.kind === "redirect") {
+    res.redirect(302, resume.url);
+    return;
+  }
+
+  res.set({
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `${isDownload ? "attachment" : "inline"}; filename="${resume.fileName}"`,
+    "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+    "Cross-Origin-Resource-Policy": "cross-origin"
+  });
+
+  res.send(resume.buffer);
+});
+
 export const PublicController = {
   getNavbar,
   getHero,
@@ -180,5 +205,6 @@ export const PublicController = {
   getContactInfo,
   getFooter,
   getSiteSettings,
-  getFullPortfolio
+  getFullPortfolio,
+  getResume
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertCircle, CheckCircle2, Cpu } from "lucide-react";
+import { AlertCircle, Cpu } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { TProject } from "@/types/portfolio";
 

@@ -6,10 +6,11 @@ import {
   TCertification,
   TEducation,
   TExperience,
-  TFooter,
+  TFooterLink,
   THeroSection,
   TNavbarItem,
   TProject,
+  TProjectImage,
   TService,
   TSiteSettings,
   TSkill,
@@ -42,6 +43,43 @@ export type THeroUpdatePayload = {
     order: number;
     isEnabled: boolean;
   }[];
+};
+
+export type TFooterLinkPayload = {
+  label: string;
+  href: string;
+  order: number;
+  isEnabled?: boolean;
+};
+
+export type TProjectPayload = Partial<
+  Pick<
+    TProject,
+    | "name"
+    | "slug"
+    | "shortDescription"
+    | "fullDescription"
+    | "purpose"
+    | "targetUsers"
+    | "isFeatured"
+    | "isEnabled"
+    | "order"
+    | "techStack"
+    | "liveLink"
+    | "githubLink"
+    | "clientGithubLink"
+    | "backendGithubLink"
+    | "demoCredentials"
+    | "problem"
+    | "solution"
+    | "results"
+    | "architectureDiagram"
+  >
+> & {
+  images?: { url: string; altText: string; fileType: TProjectImage["fileType"]; order: number }[];
+  features?: { title: string | null; text: string; type: string; order: number }[];
+  challenges?: { challenge: string; solution: string | null; order: number }[];
+  resultsList?: { metric: string; label: string; description: string | null; order: number }[];
 };
 
 export type TMessageStatusFilter = "ALL" | "NEW" | "CONTACTED" | "REPLIED" | "ARCHIVED" | "READ" | "UNREAD";
@@ -105,7 +143,7 @@ export const deleteAdminNavbarItem = async (id: string) => {
 };
 
 export const reorderAdminNavbar = async (items: { id: string; order: number }[]) => {
-  const res = await api.patch<TApiResponse<any>>("/admin/navbar/reorder", { items });
+  const res = await api.patch<TApiResponse<unknown>>("/admin/navbar/reorder", { items });
   return res.data.data;
 };
 
@@ -132,7 +170,7 @@ export const deleteAdminExperience = async (id: string) => {
 };
 
 export const reorderAdminExperiences = async (items: { id: string; order: number }[]) => {
-  const res = await api.patch<TApiResponse<any>>("/admin/experience/reorder", { items });
+  const res = await api.patch<TApiResponse<unknown>>("/admin/experience/reorder", { items });
   return res.data.data;
 };
 
@@ -159,7 +197,7 @@ export const deleteAdminSkillCategory = async (id: string) => {
 };
 
 export const reorderAdminSkillCategories = async (items: { id: string; order: number }[]) => {
-  const res = await api.patch<TApiResponse<any>>("/admin/skill-categories/reorder", { items });
+  const res = await api.patch<TApiResponse<unknown>>("/admin/skill-categories/reorder", { items });
   return res.data.data;
 };
 
@@ -184,7 +222,7 @@ export const deleteAdminSkill = async (id: string) => {
 };
 
 export const reorderAdminSkills = async (items: { id: string; order: number }[]) => {
-  const res = await api.patch<TApiResponse<any>>("/admin/skills/reorder", { items });
+  const res = await api.patch<TApiResponse<unknown>>("/admin/skills/reorder", { items });
   return res.data.data;
 };
 
@@ -195,12 +233,12 @@ export const getAdminProjects = async () => {
   return res.data.data || [];
 };
 
-export const createAdminProject = async (payload: Partial<TProject>) => {
+export const createAdminProject = async (payload: TProjectPayload) => {
   const res = await api.post<TApiResponse<TProject>>("/admin/projects", payload);
   return res.data.data;
 };
 
-export const updateAdminProject = async (id: string, payload: Partial<TProject>) => {
+export const updateAdminProject = async (id: string, payload: TProjectPayload) => {
   const res = await api.patch<TApiResponse<TProject>>(`/admin/projects/${id}`, payload);
   return res.data.data;
 };
@@ -211,7 +249,7 @@ export const deleteAdminProject = async (id: string) => {
 };
 
 export const reorderAdminProjects = async (items: { id: string; order: number }[]) => {
-  const res = await api.patch<TApiResponse<any>>("/admin/projects/reorder", { items });
+  const res = await api.patch<TApiResponse<unknown>>("/admin/projects/reorder", { items });
   return res.data.data;
 };
 
@@ -238,7 +276,7 @@ export const deleteAdminEducation = async (id: string) => {
 };
 
 export const reorderAdminEducation = async (items: { id: string; order: number }[]) => {
-  const res = await api.patch<TApiResponse<any>>("/admin/education/reorder", { items });
+  const res = await api.patch<TApiResponse<unknown>>("/admin/education/reorder", { items });
   return res.data.data;
 };
 
@@ -265,7 +303,7 @@ export const deleteAdminCertification = async (id: string) => {
 };
 
 export const reorderAdminCertifications = async (items: { id: string; order: number }[]) => {
-  const res = await api.patch<TApiResponse<any>>("/admin/certifications/reorder", { items });
+  const res = await api.patch<TApiResponse<unknown>>("/admin/certifications/reorder", { items });
   return res.data.data;
 };
 
@@ -292,7 +330,7 @@ export const deleteAdminService = async (id: string) => {
 };
 
 export const reorderAdminServices = async (items: { id: string; order: number }[]) => {
-  const res = await api.patch<TApiResponse<any>>("/admin/services/reorder", { items });
+  const res = await api.patch<TApiResponse<unknown>>("/admin/services/reorder", { items });
   return res.data.data;
 };
 
@@ -309,27 +347,27 @@ export const updateAdminSiteSettings = async (payload: Partial<TSiteSettings>) =
 };
 
 export const getAdminFooterLinks = async () => {
-  const res = await api.get<TApiResponse<any[]>>("/admin/footer-links");
+  const res = await api.get<TApiResponse<TFooterLink[]>>("/admin/footer-links");
   return res.data.data || [];
 };
 
-export const createAdminFooterLink = async (payload: any) => {
-  const res = await api.post<TApiResponse<any>>("/admin/footer-links", payload);
+export const createAdminFooterLink = async (payload: TFooterLinkPayload) => {
+  const res = await api.post<TApiResponse<unknown>>("/admin/footer-links", payload);
   return res.data.data;
 };
 
-export const updateAdminFooterLink = async (id: string, payload: any) => {
-  const res = await api.patch<TApiResponse<any>>(`/admin/footer-links/${id}`, payload);
+export const updateAdminFooterLink = async (id: string, payload: Partial<TFooterLinkPayload>) => {
+  const res = await api.patch<TApiResponse<unknown>>(`/admin/footer-links/${id}`, payload);
   return res.data.data;
 };
 
 export const deleteAdminFooterLink = async (id: string) => {
-  const res = await api.delete<TApiResponse<any>>(`/admin/footer-links/${id}`);
+  const res = await api.delete<TApiResponse<unknown>>(`/admin/footer-links/${id}`);
   return res.data.data;
 };
 
 export const reorderAdminFooterLinks = async (items: { id: string; order: number }[]) => {
-  const res = await api.patch<TApiResponse<any>>("/admin/footer-links/reorder", { items });
+  const res = await api.patch<TApiResponse<unknown>>("/admin/footer-links/reorder", { items });
   return res.data.data;
 };
 

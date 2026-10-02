@@ -11,8 +11,6 @@ import {
   MapPin,
   Loader2,
   X,
-  CheckCircle2,
-  ExternalLink,
   Save
 } from "lucide-react";
 import {
@@ -31,7 +29,8 @@ import { MediaUploader } from "@/components/admin/cms/media-uploader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/shared/loading-state";
-import { TExperience, TExperienceBullet, TExperienceMetric } from "@/types/portfolio";
+import { TExperience } from "@/types/portfolio";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export function ExperienceManager() {
   const queryClient = useQueryClient();
@@ -234,7 +233,7 @@ export function ExperienceManager() {
             <Card className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-(--color-accent)/40 transition">
               <div className="flex items-start gap-4">
                 {exp.companyLogo ? (
-                  <img
+                  <SafeImage
                     src={exp.companyLogo}
                     alt={exp.companyName}
                     className="h-12 w-12 rounded-xl object-contain border border-site p-1 bg-card shrink-0"
@@ -370,7 +369,7 @@ export function ExperienceManager() {
                   <label className="text-xs font-semibold text-highlight">Employment Status</label>
                   <select
                     value={status}
-                    onChange={(e) => setStatus(e.target.value as any)}
+                    onChange={(e) => setStatus(e.target.value as "CURRENTLY_WORKING" | "COMPLETED")}
                     className="mt-1.5 w-full rounded-xl border border-site bg-(--color-background)/60 p-2.5 text-xs text-highlight focus:border-(--color-accent) focus:outline-none"
                   >
                     <option value="COMPLETED">Completed</option>

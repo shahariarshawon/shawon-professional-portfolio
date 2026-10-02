@@ -3,6 +3,9 @@ import type { MetadataRoute } from "next";
 import { siteConfig } from "@/constants/site";
 import { getProjects } from "@/lib/public-api";
 
+// Regenerated at most hourly; project URLs track the CMS.
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -10,18 +13,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 1
-    },
-    {
-      url: `${siteConfig.url}/#projects`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8
-    },
-    {
-      url: `${siteConfig.url}/#contact`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7
     }
   ];
 

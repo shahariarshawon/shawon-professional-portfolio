@@ -3,12 +3,10 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  List,
   Plus,
   Trash2,
   Edit2,
   Layers,
-  Sparkles,
   Loader2,
   X,
   Save,
@@ -29,7 +27,7 @@ import { ConfirmDialog } from "@/components/admin/cms/confirm-dialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/shared/loading-state";
-import { TService, TServiceFeature } from "@/types/portfolio";
+import { TService } from "@/types/portfolio";
 
 export function ServicesManager() {
   const queryClient = useQueryClient();

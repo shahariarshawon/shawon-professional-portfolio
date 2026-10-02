@@ -1,8 +1,10 @@
 import app from "./app";
-import { env } from "./config/env";
+import { assertProductionEnv, env } from "./config/env";
 import prisma from "./utils/prisma";
 import { QueueService } from "./utils/queue.service";
 import { redisService } from "./common/redis/redis.service";
+
+assertProductionEnv();
 
 const server = app.listen(env.port, () => {
   console.log(`Server is running on http://localhost:${env.port}`);

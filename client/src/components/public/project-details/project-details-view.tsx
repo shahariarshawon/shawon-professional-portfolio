@@ -35,6 +35,7 @@ export function ProjectDetailsView({
             <ProjectGallery
               images={project.images || []}
               projectName={project.name}
+              techStack={project.techStack}
             />
           </div>
         </section>
@@ -49,7 +50,7 @@ export function ProjectDetailsView({
         <ProjectCTA />
       </main>
 
-      {footer ? <Footer footer={footer} /> : null}
+      <Footer footer={footer} />
     </div>
   );
 }

@@ -101,6 +101,9 @@ export type TSkill = {
   name: string;
   iconUrl?: string | null;
   level?: number | null;
+  /** Present on admin responses. */
+  categoryId?: string;
+  category?: { id: string; name: string };
   order: number;
   isEnabled: boolean;
 };
@@ -217,7 +220,8 @@ export type TProject = {
   architectures?: TProjectArchitecture[];
   caseStudy?: TProjectCaseStudy | null;
   links?: TProjectLink[];
-  diagrams?: any[];
+  diagrams?: unknown[];
+  createdAt?: string;
 };
 
 export type TEducation = {
@@ -270,6 +274,9 @@ export type TContactInfo = {
   whatsapp?: string | null;
   location?: string | null;
 };
+
+/** Footer quick links share the navbar item shape. */
+export type TFooterLink = TNavbarItem;
 
 export type TFooter = {
   name: string;

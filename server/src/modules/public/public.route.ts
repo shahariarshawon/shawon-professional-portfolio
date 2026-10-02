@@ -7,6 +7,8 @@ const router = Router();
 
 router.get("/portfolio", PublicController.getFullPortfolio);
 
+router.get("/resume", PublicController.getResume);
+
 router.get("/navbar", PublicController.getNavbar);
 
 router.get("/hero", PublicController.getHero);

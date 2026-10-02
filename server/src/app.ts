@@ -14,14 +14,24 @@ import sendResponse from "./utils/sendResponse";
 const app: Application = express();
 app.set("trust proxy", 1);
 
-// Security Headers
-app.use(helmet());
+// Security Headers. This is a public JSON/PDF API consumed cross-origin by the
+// Vercel frontend, so resources must be embeddable cross-origin (CORS still
+// gates which origins can read responses).
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  })
+);
 
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-  message: "Too many requests from this IP, please try again after 15 minutes",
+  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  message: {
+    success: false,
+    statusCode: 429,
+    message: "Too many requests from this IP, please try again after 15 minutes"
+  },
   standardHeaders: true,
   legacyHeaders: false,
 });

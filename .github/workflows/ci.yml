@@ -67,9 +67,14 @@ jobs:
     - name: Run Type Check (Client)
       run: cd client && pnpm type-check
 
+    - name: Lint (Client)
+      run: cd client && pnpm lint
+
     - name: Build (Client)
       env:
-        NEXT_PUBLIC_API_URL: https://api.shawon.dev/api/v1
+        # No API runs in CI: the build falls back to built-in content (connection refused is instant).
+        NEXT_PUBLIC_API_URL: http://localhost:5000/api
+        NEXT_PUBLIC_SITE_URL: https://shahariararafat.vercel.app
       run: cd client && pnpm build
 
     - name: Docker Build Check (Client)

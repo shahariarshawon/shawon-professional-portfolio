@@ -4,8 +4,8 @@ export const siteConfig = {
   title: "AL Shahariar Arafat Shawon | Backend Developer",
   description:
     "Professional backend-focused developer portfolio of AL Shahariar Arafat Shawon. Skilled in Node.js, Express.js, TypeScript, PostgreSQL, Prisma, MongoDB, Next.js, REST API development, authentication, and full-stack web applications.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  url: (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/+$/, ""),
+  apiUrl: (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/+$/, ""),
   email: "shahariarshawon.dev@gmail.com",
   author: "AL Shahariar Arafat Shawon",
   locale: "en_US",

@@ -6,8 +6,21 @@ import publicRoutes from "../modules/public/public.route";
 import adminRoutes from "../modules/admin/admin.route";
 import uploadRoutes from "../modules/upload/upload.route";
 import contactRoutes from "../modules/contact/contact.route";
+import sendResponse from "../utils/sendResponse";
 
 const router = Router();
+
+router.get("/", (_req, res) => {
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Shawon Portfolio API is running",
+    data: {
+      status: "healthy",
+      version: "1.0.0"
+    }
+  });
+});
 
 const moduleRoutes = [
   {

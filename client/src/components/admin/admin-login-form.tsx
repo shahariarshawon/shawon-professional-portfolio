@@ -72,7 +72,7 @@ export function AdminLoginForm() {
 
             <input
               type="email"
-              placeholder="admin@shawon.dev"
+              placeholder="admin@example.com"
               className="w-full rounded-2xl border border-site bg-transparent py-3 pl-11 pr-4 text-sm text-highlight outline-none transition placeholder:text-normal focus:border-(--color-accent)"
               {...register("email")}
             />
@@ -121,10 +121,6 @@ export function AdminLoginForm() {
           {isLoginLoading ? "Signing in..." : "Sign In"}
         </Button>
       </form>
-
-      <p className="mt-6 text-center text-xs text-normal">
-        Default seed admin: admin@shawon.dev / admin123456
-      </p>
     </div>
   );
 }

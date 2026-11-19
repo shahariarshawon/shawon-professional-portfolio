@@ -3,19 +3,31 @@ import { TApiResponse } from "@/types/api";
 import { TPortfolio, TProject } from "@/types/portfolio";
 
 export const getPortfolio = async () => {
-  const res = await api.get<TApiResponse<TPortfolio>>("/public/portfolio");
-  return res.data.data;
+  try {
+    const res = await api.get<TApiResponse<TPortfolio>>("/public/portfolio");
+    return res.data.data;
+  } catch {
+    return null;
+  }
 };
 
 export const getProjects = async () => {
-  const res = await api.get<TApiResponse<TProject[]>>("/public/projects");
-  return res.data.data || [];
+  try {
+    const res = await api.get<TApiResponse<TProject[]>>("/public/projects");
+    return res.data.data || [];
+  } catch {
+    return [];
+  }
 };
 
 export const getProjectBySlug = async (slug: string) => {
-  const res = await api.get<TApiResponse<TProject>>(
-    `/public/projects/${slug}`
-  );
+  try {
+    const res = await api.get<TApiResponse<TProject>>(
+      `/public/projects/${slug}`
+    );
 
-  return res.data.data;
+    return res.data.data;
+  } catch {
+    return null;
+  }
 };

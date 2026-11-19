@@ -13,7 +13,7 @@ import { SkillsSection } from "@/components/public/skills/skills-section";
 import { getPortfolio } from "@/lib/public-api";
 
 export default async function HomePage() {
-  const portfolio = await getPortfolio();
+  const portfolio = await getPortfolio().catch(() => null);
 
   return (
     <div className="min-h-screen bg-site">
